@@ -1226,17 +1226,15 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   </div>
   </div>
 
-  {!billPayments ? (
-  <p className="pay-panel-note">
-  {payBusy ? "Reading payment records…" : ""}
-  </p>
-  ) : (
+  {billPayments ? (
   <>
-  {billPayments.payments.length === 0 ? (
+  {billPayments.payments.length === 0 && (
   <p className="pay-panel-note">
   No payment has been requested for this bill yet.
   </p>
-  ) : (
+  )}
+
+  {billPayments.payments.length > 0 && (
   <div className="pay-attempts">
   {billPayments.payments.map((payment) => (
   <div
@@ -1376,10 +1374,12 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   confirms it. Displaying a QR, scanning it, and a
   guest saying they have paid all leave it UNPAID.
   </p>
-  )}
   </>
-  )}
-  </div>
+  ) : (
+  <p className="pay-panel-note">
+  {payBusy ? "Reading payment records…" : ""}
+  </p>
+  )}  </div>
   </div>
   </div>
   </div>
