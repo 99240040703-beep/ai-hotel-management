@@ -1349,7 +1349,6 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   </div>
   ))}
   </div>
-  )}
 
   {selectedHeader.payment_status !== "paid" && (
  <div className="pay-attempt-actions">
