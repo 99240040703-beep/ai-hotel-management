@@ -1224,7 +1224,13 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   </div>
   </div>
 
-  {billPayments ? (
+  {!billPayments && (
+  <p className="pay-panel-note">
+  {payBusy ? "Reading payment records…" : ""}
+  </p>
+  )}
+
+  {billPayments && (
   <>
   {billPayments.payments.length === 0 && (
   <p className="pay-panel-note">
@@ -1373,16 +1379,7 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   guest saying they have paid all leave it UNPAID.
   </p>
   </>
-  ) : (
-  <p className="pay-panel-note">
-  {payBusy ? "Reading payment records…" : ""}
-  </p>
   )}
-  </div>
-  </div>
-  </div>
-  </div>
- </div>
  );
 }
 
