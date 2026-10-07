@@ -1380,6 +1380,11 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   </p>
   </>
   )}
+  </div>
+  </div>
+  </div>
+  </div>
+ </div>
  );
 }
 
