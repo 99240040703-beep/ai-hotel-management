@@ -1379,7 +1379,10 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   <p className="pay-panel-note">
   {payBusy ? "Reading payment records…" : ""}
   </p>
-  )}  </div>
+  )}
+  </>
+  )}
+  </div>
   </div>
   </div>
   </div>
