@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>audit</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #090806;
+        color: #f5f1e8;
+        font: 12px/1.5 Consolas, monospace;
+      }
+      iframe {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        border: 0;
+      }
+      /* Chrome clamps the real window to a few hundred pixels, so a narrow
+         layout is measured inside an explicitly sized frame instead: media
+         queries inside a frame respond to the frame, not the window. */
+      iframe.narrow {
+        width: 320px;
+      }
+      iframe.narrow-375 {
+        width: 375px;
+      }
+      iframe.narrow-390 {
+        width: 390px;
+      }
+      iframe.narrow-430 {
+        width: 430px;
+      }
+      #report {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 10;
+        max-height: 46vh;
+        overflow: auto;
+        padding: 10px 12px;
+        background: #000;
+        border-top: 2px solid #d4a95c;
+        white-space: pre-wrap;
+      }
+      .bad {
+        color: #f2a79f;
+      }
+      .ok {
+        color: #6fca9b;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe id="app" src="/"></iframe>
+    <div id="report">measuring…</div>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const frame = document.getElementById("app");
+      const report = document.getElementById("report");
+
+      if (params.get("w")) {
+        frame.style.width = `${params.get("w")}px`;
+      }
+
+      function describe(node) {
+        const id = node.id ? `#${node.id}` : "";
+        const classes = node.className && typeof node.className === "string"
+          ? "." + node.className.trim().split(/\s+/).slice(0, 3).join(".")
+          : "";
+
+        return node.tagName.toLowerCase() + id + classes;
+      }
+
+      frame.addEventListener("load", () => {
+        const doc = frame.contentDocument;
+        const view = frame.contentWindow.innerWidth;
+
+        setTimeout(() => {
+          if (params.get("drawer")) {
+            const burger = doc.querySelector(".shell-menu-button");
+
+            if (burger) burger.click();
+          }
+
+          setTimeout(() => {
+            const root = doc.documentElement;
+            const scrollWidth = root.scrollWidth;
+            const lines = [];
+
+          lines.push(
+            `viewport ${view}  documentElement.scrollWidth ${scrollWidth}`,
+          );
+          lines.push(
+            scrollWidth <= view + 1
+              ? "  OK  no horizontal overflow"
+              : `  OVERFLOW by ${scrollWidth - view}px`,
+          );
+
+          const offenders = [];
+
+          doc.querySelectorAll("*").forEach((node) => {
+            const box = node.getBoundingClientRect();
+
+            if (box.width === 0) return;
+
+            /* Right edge past the viewport, and not a deliberately
+               scrollable strip. */
+            if (box.right > view + 1 && box.width < view * 3) {
+              const style = frame.contentWindow.getComputedStyle(node);
+
+              if (style.overflowX === "auto" || style.overflowX === "scroll") {
+                return;
+              }
+
+              offenders.push({
+                what: describe(node),
+                right: Math.round(box.right),
+                width: Math.round(box.width),
+              });
+            }
+          });
+
+          lines.push("");
+          lines.push(`elements crossing the right edge: ${offenders.length}`);
+          lines.push("");
+
+          offenders
+            .sort((a, b) => b.right - a.right)
+            .slice(0, 25)
+            .forEach((entry) => {
+              lines.push(
+                `  ${String(entry.right).padStart(5)}  w=${String(
+                  entry.width,
+                ).padStart(5)}  ${entry.what}`,
+              );
+            });
+
+          report.textContent = lines.join("\n");
+          }, 600);
+        }, 2800);
+      });
+    </script>
+  </body>
+</html>

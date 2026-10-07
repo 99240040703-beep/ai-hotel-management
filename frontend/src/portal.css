@@ -1,0 +1,6249 @@
+/* ============================================================================
+   PREMIUM AUTHENTICATED LAYER
+
+   Tokens · the shared shell · scaffolding · KPIs · panels · tables · forms ·
+   buttons · states · kitchen · AI console · lifecycle · modals · the guest
+   portal · typography · responsive · login · reduced motion · the repaint
+   of App.css's light layer, which comes last because it is the layer that
+   replaces what App.css drew.
+
+   Loaded after App.css, so every rule here wins a tie. Anything that needs
+   to beat a higher-specificity App.css rule says so at the point of use.
+   ========================================================================= */
+
+/* The scope is the authenticated shell, plus the two public surfaces that
+   borrow the same tokens. Anything inside one of these can read them. */
+.shell-root,
+.app,
+.customer-portal,
+.auth-page {
+  /* ---- surfaces. The brief's exact values. ---- */
+  --pf-bg: #090806;
+  --pf-surface: #11100d;
+  --pf-surface-2: #15130f;
+  --pf-surface-3: #1a1813;
+  --pf-glass: rgba(17, 16, 13, 0.82);
+  --pf-glass-hi: rgba(26, 24, 19, 0.9);
+
+  /* ---- accent ---- */
+  --pf-gold: #d4a95c;
+  --pf-gold-light: #f4d28a;
+  --pf-gold-dark: #8d642f;
+  --pf-gold-faint: rgba(212, 169, 92, 0.08);
+
+  /* ---- lines ---- */
+  --pf-line: rgba(212, 169, 92, 0.13);
+  --pf-line-strong: rgba(212, 169, 92, 0.28);
+  --pf-line-neutral: rgba(245, 241, 232, 0.07);
+
+  /* ---- type ---- */
+  --pf-text: #f5f1e8;
+  --pf-text-2: #bcb4a7;
+  --pf-text-3: #857c6f;
+  --pf-ink: #17130d;
+
+  /* ---- state ---- */
+  --pf-ok: #6fca9b;
+  --pf-ok-bg: rgba(111, 202, 155, 0.11);
+  --pf-warn: #e0a458;
+  --pf-warn-bg: rgba(224, 164, 88, 0.12);
+  --pf-danger: #d96459;
+  --pf-danger-bg: rgba(217, 100, 89, 0.12);
+  --pf-info: #7fa8e8;
+  --pf-info-bg: rgba(127, 168, 232, 0.12);
+
+  /* ---- depth ----
+     One warm light, high and to the left, the way a dining room is lit:
+     pendants over the left of the room, the far wall falling away into
+     shadow. Every surface in the product sits in that same light, so a
+     card raised here and a card raised there read as the same table.
+
+     Each level is two shadows rather than one: a tight contact shadow that
+     says the surface touches something, and a wide soft shadow that says
+     how far above it sits. A single soft shadow reads as a sticker. */
+  --pf-elev-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  --pf-elev-2: 0 2px 6px rgba(0, 0, 0, 0.32), 0 12px 26px rgba(0, 0, 0, 0.3);
+  --pf-elev-3: 0 4px 12px rgba(0, 0, 0, 0.34), 0 26px 58px rgba(0, 0, 0, 0.42);
+  --pf-elev-4: 0 8px 20px rgba(0, 0, 0, 0.36), 0 42px 92px rgba(0, 0, 0, 0.5);
+
+  /* The lit edge. A one-pixel warm line along the top of a surface, which
+     is what stops a dark card from looking like a hole cut in the page. */
+  --pf-rim: inset 0 1px 0 rgba(255, 243, 220, 0.055);
+  --pf-rim-strong: inset 0 1px 0 rgba(255, 243, 220, 0.1);
+
+  /* The shadow pair cast by that light: down and to the right. */
+  --pf-shadow: var(--pf-elev-2);
+  --pf-shadow-lg: var(--pf-elev-3);
+  --pf-shadow-gold: 0 2px 6px rgba(0, 0, 0, 0.3),
+    0 16px 38px rgba(212, 169, 92, 0.16);
+
+  /* ---- motion. Shorter than the public site's: these screens are used
+         all day and a slow interface gets tiring. ---- */
+  --pf-dur: 200ms;
+  --pf-dur-slow: 320ms;
+  --pf-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================================================
+   REUSABLE PRIMITIVE VOCABULARY
+
+   The names the brief asks for. Thin aliases over the same declarations
+   the existing pages use, so a page can adopt `.premium-card` without a
+   second visual language appearing.
+   ========================================================================= */
+
+.premium-page {
+  padding: clamp(18px, 2.6vw, 34px);
+}
+
+.premium-panel,
+.premium-card,
+.premium-stat {
+  position: relative;
+  border: 1px solid var(--pf-line);
+  border-radius: 18px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-shadow);
+}
+
+.premium-panel::before,
+.premium-card::before,
+.premium-stat::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 169, 92, 0.4),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pf-gold-light);
+}
+
+.premium-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 22px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease),
+    background-color var(--pf-dur) var(--pf-ease),
+    border-color var(--pf-dur) var(--pf-ease);
+}
+
+.premium-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.premium-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.premium-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.premium-table th {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--pf-line-strong);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.premium-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--pf-line-neutral);
+  color: var(--pf-text-2);
+  vertical-align: middle;
+}
+
+.premium-table tbody tr {
+  transition: background-color var(--pf-dur) var(--pf-ease);
+}
+
+.premium-table tbody tr:hover {
+  background: rgba(212, 169, 92, 0.045);
+}
+
+.premium-modal {
+  border: 1px solid var(--pf-line-strong);
+  border-radius: 22px;
+  background: var(--pf-surface);
+  box-shadow: var(--pf-elev-3);
+  overflow: hidden;
+}
+
+/* ============================================================================
+   THE AUTHENTICATED SHELL
+
+   One shell, two roles. A left sidebar and a main column - no top
+   navigation bar anywhere in the product. The thin utility row at the top
+   of the main column carries the drawer button, the section name and
+   nothing else; every destination lives in the sidebar.
+
+   The rail is 280px expanded and 80px collapsed. Below 1080px it stops
+   being furniture and becomes a drawer, driven by the same markup: the
+   collapsed rail is meaningless once the sidebar covers the page.
+   ========================================================================= */
+
+.shell-root {
+  /* One light source for the whole frame. Painted rather than blurred, so
+     it costs nothing to composite, and never bright enough to read as a
+     glow - it is a room, not a lamp. */
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--pf-bg);
+  color: var(--pf-text);
+  background-image:
+    radial-gradient(
+      880px 640px at 2% -8%,
+      rgba(212, 169, 92, 0.075),
+      transparent 58%
+    ),
+    radial-gradient(
+      760px 540px at 98% 0%,
+      rgba(146, 90, 40, 0.055),
+      transparent 56%
+    );
+  background-attachment: fixed;
+}
+
+/* ---- the sidebar ---- */
+
+.shell-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  /* The rail's own edge catches the light on its left, and the surface it
+     stands against falls away to the right. */
+  width: 280px;
+  flex-shrink: 0;
+  height: 100vh;
+  height: 100dvh;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 17, 13, 0.94),
+    rgba(12, 10, 8, 0.97)
+  );
+  border-right: 1px solid var(--pf-line);
+  box-shadow: 1px 0 0 rgba(255, 243, 220, 0.03), var(--pf-elev-1);
+  transition: width var(--pf-dur-slow) var(--pf-ease);
+}
+
+.shell-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  /* Generous, because this is the one place the restaurant's name is
+     always on screen. */
+  padding: 24px 20px 22px;
+  border-bottom: 1px solid var(--pf-line-neutral);
+}
+
+.shell-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 13px;
+  /* Bevel, not a glow: a lit top-left edge and a shaded bottom-right one. */
+  background: linear-gradient(
+    145deg,
+    rgba(244, 210, 138, 0.16),
+    rgba(141, 100, 47, 0.06)
+  );
+  box-shadow: var(--pf-rim), 0 6px 16px rgba(0, 0, 0, 0.34);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--pf-gold-light);
+}
+
+.shell-brand-text {
+  min-width: 0;
+}
+
+.shell-brand-text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  color: var(--pf-text);
+}
+
+.shell-brand-text span {
+  display: block;
+  margin-top: 4px;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+  white-space: nowrap;
+}
+
+.shell-drawer-close {
+  display: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  flex-shrink: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pf-text-2);
+  cursor: pointer;
+  transition:
+    border-color var(--pf-dur) var(--pf-ease),
+    color var(--pf-dur) var(--pf-ease);
+}
+
+.shell-drawer-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.shell-drawer-close:hover {
+  border-color: var(--pf-line-strong);
+  color: var(--pf-gold);
+}
+
+/* ---- the navigation list ---- */
+
+.shell-nav {
+  flex: 1;
+  padding: 16px 12px 8px;
+  overflow-y: auto;
+  /* Room reserved for the scrollbar so it never sits under a label. */
+  scrollbar-gutter: stable;
+}
+
+.shell-nav-group + .shell-nav-group {
+  margin-top: 18px;
+}
+
+.shell-nav-group-label {
+  margin: 0 0 8px;
+  padding: 0 12px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+  opacity: 0.72;
+}
+
+.shell-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-height: 46px;
+  padding: 9px 12px;
+  margin-bottom: 3px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--pf-text-2);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease),
+    box-shadow 200ms var(--pf-ease);
+}
+
+.shell-nav-item .nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--pf-text-3);
+  transition: color 200ms var(--pf-ease);
+}
+
+.shell-nav-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.shell-nav-label {
+  display: block;
+  font-size: 13.5px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shell-nav-hint {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--pf-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.78;
+}
+
+.shell-nav-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  flex-shrink: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--pf-gold-light);
+}
+
+/* Hover. A two-pixel lift and a surface one step lighter - the same
+   movement a hand makes reaching for a card, and nothing more. */
+.shell-nav-item:hover {
+  transform: translateX(2px);
+  background: rgba(212, 169, 92, 0.055);
+  border-color: var(--pf-line-neutral);
+  color: var(--pf-text);
+}
+
+.shell-nav-item:hover .nav-icon {
+  color: var(--pf-gold-light);
+}
+
+/* Active. One gold rule out of the left edge, a warm wash across the
+   surface, and a hair more elevation than its neighbours - not a glow,
+   because a glow on every item would make the page unreadable. */
+.shell-nav-item.is-active {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 169, 92, 0.15),
+    rgba(212, 169, 92, 0.025)
+  );
+  border-color: var(--pf-line);
+  box-shadow: var(--pf-rim), 0 4px 14px rgba(0, 0, 0, 0.28);
+  color: var(--pf-text);
+  transform: none;
+}
+
+.shell-nav-item.is-active .nav-icon {
+  color: var(--pf-gold);
+}
+
+.shell-nav-item.is-active .shell-nav-hint {
+  color: var(--pf-text-2);
+  opacity: 1;
+}
+
+.shell-nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  width: 3px;
+  height: 24px;
+  border-radius: 0 3px 3px 0;
+  background: var(--gold-gradient);
+  transform: translateY(-50%);
+}
+
+/* ---- the account card and the way out ---- */
+
+.shell-account {
+  padding: 12px;
+  border-top: 1px solid var(--pf-line-neutral);
+}
+
+.shell-account-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 11px;
+  border: 1px solid var(--pf-line-neutral);
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.shell-account-avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.shell-account-copy {
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.shell-account-copy strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--pf-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shell-account-copy span {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+}
+
+.shell-signout {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--pf-text-3);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease);
+}
+
+.shell-signout .nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.shell-signout:hover {
+  transform: translateX(2px);
+  background: var(--pf-danger-bg);
+  color: var(--pf-danger);
+}
+
+/* ---- the collapsed rail ---- */
+
+.shell-collapsed .shell-sidebar {
+  width: 80px;
+}
+
+.shell-collapsed .shell-brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.shell-collapsed .shell-brand-text,
+.shell-collapsed .shell-nav-group-label,
+.shell-collapsed .shell-nav-copy,
+.shell-collapsed .shell-account-copy,
+.shell-collapsed .shell-signout .shell-nav-label {
+  display: none;
+}
+
+.shell-collapsed .shell-nav {
+  padding-inline: 10px;
+}
+
+.shell-collapsed .shell-nav-item,
+.shell-collapsed .shell-signout {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+/* The badge survives the collapse, or a rail would quietly hide the one
+   number a manager is looking for. */
+.shell-collapsed .shell-nav-badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  min-width: 8px;
+  height: 8px;
+  padding: 0;
+  font-size: 0;
+  border-color: transparent;
+  background: var(--pf-gold);
+}
+
+.shell-collapsed .shell-account-card {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+/* Hovering a collapsed item names it. A real tooltip rather than the
+   native `title`, so it can be styled like the rest of the product and
+   does not appear a second, browser-drawn second later. */
+.shell-collapsed .shell-nav-item[data-tip]::after,
+.shell-collapsed .shell-signout[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + 14px);
+  top: 50%;
+  z-index: 60;
+  padding: 7px 12px;
+  border: 1px solid var(--pf-line-strong);
+  border-radius: 10px;
+  background: var(--pf-surface-3);
+  box-shadow: var(--pf-elev-3);
+  color: var(--pf-text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-6px, -50%);
+  transition:
+    opacity 180ms var(--pf-ease),
+    transform 180ms var(--pf-ease);
+  pointer-events: none;
+}
+
+.shell-collapsed .shell-nav-item[data-tip]:hover::after,
+.shell-collapsed .shell-signout[data-tip]:hover::after,
+.shell-collapsed .shell-nav-item[data-tip]:focus-visible::after {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+/* ---- the main column ---- */
+
+.shell-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shell-utility {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 0 clamp(16px, 2.4vw, 30px);
+  background: rgba(9, 8, 6, 0.72);
+  border-bottom: 1px solid var(--pf-line-neutral);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.shell-utility-section {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shell-utility-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.shell-menu-button,
+.shell-collapse {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 11px;
+  background: transparent;
+  color: var(--pf-text-2);
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease);
+}
+
+.shell-menu-button svg,
+.shell-collapse svg {
+  width: 18px;
+  height: 18px;
+}
+
+.shell-menu-button:hover,
+.shell-collapse:hover {
+  transform: translateY(-1px);
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold);
+}
+
+/* The drawer button only exists below the drawer breakpoint. */
+.shell-menu-button {
+  display: none;
+}
+
+.shell-content {
+  flex: 1;
+  /* Without this a wide table forces the whole page sideways, which is the
+     most common overflow bug there is. */
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* Generous, deliberately. The public site sets the pace; the portal does
+   not shrink to a denser grid just because it has more on it. */
+.shell-page {
+  padding: clamp(22px, 3vw, 40px) clamp(18px, 2.8vw, 42px) clamp(40px, 6vw, 80px);
+  max-width: 1560px;
+}
+
+/* ---- the page heading ----
+   The same three parts on every screen: a small gold eyebrow, a display
+   title, and one line of context. */
+
+.shell-page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(16px, 2.4vw, 30px);
+  flex-wrap: wrap;
+  margin-bottom: clamp(20px, 2.6vw, 32px);
+}
+
+.shell-page-headings {
+  min-width: 0;
+}
+
+.shell-eyebrow {
+  margin: 0 0 10px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+}
+
+.shell-page-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.6vw, 44px);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--pf-text);
+}
+
+.shell-page-subtitle {
+  margin: 10px 0 0;
+  max-width: 62ch;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--pf-text-2);
+}
+
+.shell-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---- the scrim, only ever a drawer ---- */
+
+.shell-scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  border: 0;
+  background: rgba(5, 4, 3, 0.68);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: fade-in var(--pf-dur) var(--pf-ease) both;
+}
+
+/* ============================================================================
+   PAGE SCAFFOLDING
+
+   The page gutter belongs to the shell, so `.page-container` no longer
+   carries padding of its own. It stays in the stylesheet because every
+   page component still uses it, and a page that brought its own gutter
+   would be inset twice.
+   ========================================================================= */
+
+.page-container,
+.premium-page {
+  padding: 0;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  margin-bottom: clamp(18px, 2.4vw, 28px);
+}
+
+.page-header h1,
+.page-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(23px, 3vw, 32px);
+  font-weight: 600;
+  line-height: 1.16;
+  color: var(--pf-text);
+}
+
+.section-desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--pf-text-3);
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.section-header h2,
+.section-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+/* ============================================================================
+   KPI CARDS
+
+   Elevation level 2, the same as every other raised surface, plus a lit
+   top edge. The gold on a card is a 1px rule that warms on hover - not a
+   glow, and not a colour per card. A grid of six figures should read as
+   six numbers, not as six buttons.
+   ========================================================================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: clamp(12px, 1.4vw, 18px);
+  margin-bottom: clamp(18px, 2.4vw, 26px);
+}
+
+.stat-card {
+  position: relative;
+  padding: 19px 20px 20px;
+  overflow: hidden;
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-elev-2);
+  transition:
+    transform var(--pf-dur) var(--pf-ease),
+    border-color var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease);
+}
+
+/* The lit edge: a hairline of warm light along the top of the surface. */
+.stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 243, 220, 0.1),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* A quiet top edge that warms on hover - the only gold allowed to move
+   on a card. */
+.stat-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--gold-gradient);
+  opacity: 0;
+  transition: opacity var(--pf-dur) var(--pf-ease);
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--pf-line-strong);
+  box-shadow: var(--pf-elev-3);
+}
+
+.stat-card:hover::after {
+  opacity: 0.55;
+}
+
+/* The one card on a page that the eye should land on first. Elevation 3,
+   because it sits one step above the row rather than inside it. */
+.stat-card.is-focus {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 24, 19, 1),
+    rgba(21, 19, 15, 1)
+  );
+  border-color: var(--pf-line-strong);
+  box-shadow: var(--pf-elev-3);
+}
+
+.stat-card h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.stat-card strong {
+  display: block;
+  font-family: var(--font-display);
+  /* The one place a bigger numeral is right: it is the headline of the
+     card, and display numerals give it weight without shouting. */
+  font-size: clamp(27px, 3.4vw, 36px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--pf-text);
+}
+
+.stat-card strong.gold,
+.stat-card strong.money,
+.stat-card strong.collected {
+  color: var(--pf-gold-light);
+}
+
+.stat-card small {
+  display: block;
+  margin-top: 9px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--pf-text-3);
+}
+
+.stat-card.is-warn {
+  border-color: rgba(224, 164, 88, 0.3);
+}
+
+.stat-card.is-warn strong {
+  color: var(--pf-warn);
+}
+
+.stat-card.is-danger {
+  border-color: rgba(217, 100, 89, 0.3);
+}
+
+.stat-card.is-danger strong {
+  color: var(--pf-danger);
+}
+
+.stat-card.is-ok strong {
+  color: var(--pf-ok);
+}
+
+/* ============================================================================
+   PANELS
+   ========================================================================= */
+
+.panel,
+.table-card,
+.form-card,
+.detail-section,
+.summary-panel,
+.chart-panel,
+.operations-panel,
+.menu-panel,
+.dashboard-hero-panel {
+  position: relative;
+  border: 1px solid var(--pf-line);
+  border-radius: 18px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-shadow);
+}
+
+.panel,
+.table-card,
+.form-card,
+.detail-section {
+  padding: clamp(16px, 2vw, 22px);
+  margin-bottom: 18px;
+}
+
+.panel::before,
+.table-card::before,
+.form-card::before,
+.detail-section::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 169, 92, 0.34),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.panel-header h2,
+.panel-header h3,
+.table-card h2,
+.form-card h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+.panel-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--pf-text-2);
+}
+
+.panel-tag.success {
+  border-color: rgba(111, 202, 155, 0.28);
+  background: var(--pf-ok-bg);
+  color: var(--pf-ok);
+}
+
+.panel-tag.warn {
+  border-color: rgba(224, 164, 88, 0.28);
+  background: var(--pf-warn-bg);
+  color: var(--pf-warn);
+}
+
+.panel-tag.danger {
+  border-color: rgba(217, 100, 89, 0.28);
+  background: var(--pf-danger-bg);
+  color: var(--pf-danger);
+}
+
+.detail-section h3,
+.detail-section h4 {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px 22px;
+}
+
+.detail-grid label,
+.detail-item label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.detail-grid strong,
+.detail-item strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+/* ============================================================================
+   TABLES
+   ========================================================================= */
+
+.table-card {
+  overflow: hidden;
+}
+
+.table-card > h2,
+.table-card > h3 {
+  margin-bottom: 15px;
+}
+
+/* The scroll container. Without it a wide table pushes the whole page
+   sideways, which is the most common overflow bug there is. */
+.table-responsive,
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.table-card table,
+.table-responsive table,
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.table-card th,
+.table-responsive th,
+.table-container th {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--pf-line-strong);
+  background: rgba(0, 0, 0, 0.16);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table-card td,
+.table-responsive td,
+.table-container td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--pf-line-neutral);
+  color: var(--pf-text-2);
+  vertical-align: middle;
+}
+
+.table-card tbody tr,
+.table-responsive tbody tr,
+.table-container tbody tr {
+  transition: background-color var(--pf-dur) var(--pf-ease);
+}
+
+.table-card tbody tr:hover,
+.table-responsive tbody tr:hover,
+.table-container tbody tr:hover {
+  background: rgba(212, 169, 92, 0.045);
+}
+
+.table-card tbody tr:last-child td,
+.table-responsive tbody tr:last-child td,
+.table-container tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.all-orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.count-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--pf-gold-light);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--pf-text-2);
+  white-space: nowrap;
+}
+
+.status-pill.is-ok,
+.status-pill.success {
+  border-color: rgba(111, 202, 155, 0.3);
+  background: var(--pf-ok-bg);
+  color: var(--pf-ok);
+}
+
+.status-pill.is-warn,
+.status-pill.warn {
+  border-color: rgba(224, 164, 88, 0.3);
+  background: var(--pf-warn-bg);
+  color: var(--pf-warn);
+}
+
+.status-pill.is-danger,
+.status-pill.danger,
+.status-pill.cancelled {
+  border-color: rgba(217, 100, 89, 0.3);
+  background: var(--pf-danger-bg);
+  color: var(--pf-danger);
+}
+
+.status-pill.is-info,
+.status-pill.info {
+  border-color: rgba(127, 168, 232, 0.3);
+  background: var(--pf-info-bg);
+  color: var(--pf-info);
+}
+
+.info-badge,
+.cart-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  border: 1px solid var(--pf-line);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--pf-gold-light);
+}
+
+/* ============================================================================
+   FORMS
+
+   `.form-card`, `.form-group` and `.form-hint` had no rules at all, so
+   admin forms were rendering with browser defaults. First defined here.
+   ========================================================================= */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.form-group label,
+.form-card label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.form-card input,
+.form-card select,
+.form-card textarea,
+.form-grid input,
+.form-grid select,
+.form-grid textarea,
+.detail-section input,
+.detail-section select,
+.detail-section textarea,
+.detail-item input,
+.detail-item select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--pf-line);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--pf-text);
+  font-family: inherit;
+  font-size: 13.5px;
+  transition:
+    border-color var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease),
+    background-color var(--pf-dur) var(--pf-ease);
+}
+
+.form-card input::placeholder,
+.form-grid input::placeholder {
+  color: var(--pf-text-3);
+}
+
+.form-card input:focus,
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus,
+.detail-section input:focus,
+.detail-section select:focus {
+  outline: none;
+  border-color: var(--pf-gold);
+  background: rgba(212, 169, 92, 0.045);
+  box-shadow: 0 0 0 3px rgba(212, 169, 92, 0.12);
+}
+
+.form-hint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--pf-text-3);
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--pf-line-neutral);
+}
+
+/* ============================================================================
+   BUTTONS
+   ========================================================================= */
+
+.primary-btn,
+.secondary-btn,
+.action-btn,
+.edit-btn,
+.delete-btn,
+.add-btn,
+.kitchen-action-btn,
+.apply-price-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease),
+    background-color var(--pf-dur) var(--pf-ease),
+    border-color var(--pf-dur) var(--pf-ease),
+    color var(--pf-dur) var(--pf-ease);
+}
+
+.primary-btn {
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+  box-shadow: var(--pf-shadow-gold);
+}
+
+.primary-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 48px rgba(212, 169, 92, 0.28);
+}
+
+.secondary-btn,
+.action-btn {
+  background: var(--pf-glass);
+  border-color: var(--pf-line);
+  color: var(--pf-text);
+}
+
+.secondary-btn:hover:not(:disabled),
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+}
+
+.edit-btn {
+  background: var(--pf-gold-faint);
+  border-color: var(--pf-line);
+  color: var(--pf-gold-light);
+}
+
+.delete-btn {
+  background: var(--pf-danger-bg);
+  border-color: rgba(217, 100, 89, 0.28);
+  color: var(--pf-danger);
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: rgba(217, 100, 89, 0.2);
+}
+
+.kitchen-action-btn {
+  min-height: 40px;
+  padding: 9px 16px;
+  background: var(--pf-glass);
+  border-color: var(--pf-line);
+  color: var(--pf-text);
+}
+
+.kitchen-action-btn:hover:not(:disabled) {
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+}
+
+/* A button with no class of its own. Fourteen of them are scattered across
+   the pages that grew after the design system, and each one was rendering
+   as the browser's own grey rectangle - the most obvious "this is a
+   prototype" tell in the whole product. The recipe is the secondary
+   button's, so an unclassed control sits in the same family as a classed
+   one. The intent is to give these a class; until then they look
+   deliberate rather than forgotten. */
+.shell-root button:not([class]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-glass);
+  color: var(--pf-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease);
+}
+
+.shell-root button:not([class]):hover {
+  transform: translateY(-2px);
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+.shell-root button:not([class]):active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.shell-root button:not([class]):disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* The primary and secondary recipes, repeated where they belong. */
+.primary-btn:disabled,
+.secondary-btn:disabled,
+.action-btn:disabled,
+.delete-btn:disabled,
+.edit-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Button press. Transform rather than a colour change, because a colour
+   change reads as a state and a press should feel physical. */
+.primary-btn:active:not(:disabled),
+.secondary-btn:active:not(:disabled),
+.action-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* ============================================================================
+   PREMIUM AUTHENTICATED LAYER — STATES, KITCHEN, AI, GUEST, RESPONSIVE
+   ========================================================================= */
+
+/* ============================================================================
+   9. LOADING, EMPTY, ERROR
+   ========================================================================= */
+
+.app-loading {
+  display: grid;
+  place-items: center;
+  gap: 16px;
+  min-height: 100vh;
+  background: var(--pf-bg);
+  color: var(--pf-text-3);
+  font-size: 13.5px;
+}
+
+.loading-spinner,
+.ai-spinner {
+  width: 38px;
+  height: 38px;
+  border: 2px solid rgba(212, 169, 92, 0.16);
+  border-top-color: var(--pf-gold);
+  border-radius: 999px;
+  animation: spin 820ms linear infinite;
+}
+
+.loading-panel,
+.ai-loading-box {
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  min-height: 200px;
+  padding: 30px;
+  border: 1px solid var(--pf-line);
+  border-radius: 18px;
+  background: var(--pf-surface-2);
+  color: var(--pf-text-3);
+  font-size: 13px;
+}
+
+.empty-state,
+.empty-note,
+.empty-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 24px;
+  border: 1px dashed var(--pf-line);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--pf-text-3);
+  text-align: center;
+  font-size: 13.5px;
+}
+
+.empty-state h3,
+.empty-note h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--pf-text-2);
+}
+
+.empty-state p,
+.empty-note p {
+  margin: 0;
+  max-width: 420px;
+  color: var(--pf-text-3);
+}
+
+.empty-icon {
+  font-size: 26px;
+  opacity: 0.5;
+}
+
+.empty-note {
+  padding: 22px;
+}
+
+.error-message {
+  padding: 13px 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(217, 100, 89, 0.32);
+  border-radius: 13px;
+  background: var(--pf-danger-bg);
+  color: #f2a79f;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(111, 202, 155, 0.3);
+  border-radius: 13px;
+  background: var(--pf-ok-bg);
+  color: #a6dfc3;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ============================================================================
+   10. DASHBOARD
+
+   The hero is the page's first impression, so it carries the gold
+   treatment; the KPI row below it stays restrained.
+   ========================================================================= */
+
+.dashboard-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: clamp(20px, 3vw, 40px);
+  align-items: center;
+  padding: clamp(22px, 3vw, 36px);
+  margin-bottom: 20px;
+  border: 1px solid var(--pf-line);
+  border-radius: 20px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-shadow);
+  overflow: hidden;
+}
+
+/* A single warm light source, top-left, the way a dining room is lit. */
+.dashboard-hero::before {
+  content: "";
+  position: absolute;
+  inset: -40% 40% 40% -20%;
+  background: radial-gradient(
+    circle,
+    rgba(212, 169, 92, 0.13),
+    transparent 66%
+  );
+  pointer-events: none;
+}
+
+.dashboard-hero > * {
+  position: relative;
+}
+
+.dashboard-hero-copy {
+  min-width: 0;
+}
+
+.eyebrow,
+.dashboard-top-row .eyebrow {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+}
+
+.dashboard-hero h1 {
+  margin: 12px 0 10px;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.6vw, 40px);
+  font-weight: 600;
+  line-height: 1.12;
+  color: var(--pf-text);
+}
+
+.dashboard-hero p {
+  margin: 0 0 20px;
+  max-width: 52ch;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--pf-text-2);
+}
+
+.dashboard-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dashboard-hero-panel {
+  position: relative;
+  padding: 20px;
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.26);
+}
+
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 16px;
+  padding: 5px 12px;
+  border: 1px solid rgba(111, 202, 155, 0.28);
+  border-radius: 999px;
+  background: var(--pf-ok-bg);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--pf-ok);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--pf-ok);
+  animation: glow-pulse 2.4s var(--pf-ease) infinite;
+}
+
+.hero-metric strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--pf-gold-light);
+}
+
+.hero-metric span {
+  display: block;
+  margin-top: 5px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--pf-line-neutral);
+}
+
+.mini-metric span {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.mini-metric strong {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.dashboard-panels,
+.dashboard-panels.lower-panels {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.chart-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.chart-heading span {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.chart-heading strong {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--pf-gold-light);
+}
+
+/* ---- bar chart ---- */
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 200px;
+  padding-top: 8px;
+}
+
+.bar-column {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+  min-width: 0;
+}
+
+.bar {
+  width: 100%;
+  max-width: 38px;
+  border-radius: 6px 6px 3px 3px;
+  background: linear-gradient(
+    180deg,
+    var(--pf-gold-light),
+    var(--pf-gold-dark)
+  );
+  opacity: 0.82;
+  transition: opacity var(--pf-dur) var(--pf-ease),
+    transform var(--pf-dur) var(--pf-ease);
+}
+
+.bar-column:hover .bar {
+  opacity: 1;
+  transform: scaleY(1.03);
+  transform-origin: bottom;
+}
+
+.bar-value {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--pf-text-3);
+  white-space: nowrap;
+}
+
+.bar-column small {
+  font-size: 10px;
+  color: var(--pf-text-3);
+}
+
+/* ---- status + ops lists ---- */
+
+.status-list,
+.ops-list,
+.dish-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-item,
+.op-item,
+.dish-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--pf-line-neutral);
+  font-size: 13px;
+}
+
+.status-item:last-child,
+.op-item:last-child,
+.dish-item:last-child {
+  border-bottom: 0;
+}
+
+.status-label,
+.op-title {
+  color: var(--pf-text-3);
+}
+
+.status-item strong,
+.op-value {
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.op-value.good {
+  color: var(--pf-ok);
+}
+
+.dish-item strong {
+  display: block;
+  font-size: 13.5px;
+  color: var(--pf-text);
+}
+
+.dish-item small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--pf-text-3);
+}
+
+.item-main strong,
+.item-name {
+  font-size: 13px;
+  color: var(--pf-text);
+}
+
+.item-notes,
+.item-price {
+  font-size: 11.5px;
+  color: var(--pf-text-3);
+}
+
+/* ============================================================================
+   11. KITCHEN BOARD
+
+   Readability beats decoration here - this is looked at across a pass for
+   hours. Large type, high contrast, and one colour per state.
+   ========================================================================= */
+
+.kitchen-workflow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(228px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.kitchen-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.kitchen-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--pf-line);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.column-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pf-text-2);
+}
+
+.column-icon {
+  font-size: 14px;
+}
+
+.order-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--pf-gold-light);
+}
+
+.kitchen-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.kitchen-order-card {
+  padding: 13px 14px;
+  border: 1px solid var(--pf-line-neutral);
+  border-radius: 13px;
+  background: var(--pf-surface-2);
+  transition:
+    border-color var(--pf-dur) var(--pf-ease),
+    transform var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease);
+}
+
+.kitchen-order-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--pf-line-strong);
+  box-shadow: var(--pf-shadow);
+}
+
+/* One hue per column, set by the header above. */
+.kitchen-column[data-state="new"] .kitchen-order-card {
+  border-left: 3px solid var(--pf-info);
+}
+
+.kitchen-column[data-state="confirmed"] .kitchen-order-card {
+  border-left: 3px solid var(--pf-gold);
+}
+
+.kitchen-column[data-state="preparing"] .kitchen-order-card {
+  border-left: 3px solid var(--pf-warn);
+}
+
+.kitchen-column[data-state="ready"] .kitchen-order-card {
+  border-left: 3px solid var(--pf-ok);
+}
+
+.kitchen-column[data-state="served"] .kitchen-order-card {
+  border-left: 3px solid var(--pf-text-3);
+}
+
+.order-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+/* The reference is the largest thing on the ticket: it is what a cook
+   calls out. */
+.order-ref {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.current-status {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+}
+
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.order-item-line,
+.order-items > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--pf-text-2);
+}
+
+.item-qty {
+  min-width: 22px;
+  font-weight: 800;
+  color: var(--pf-gold-light);
+}
+
+.order-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px solid var(--pf-line-neutral);
+}
+
+/* ============================================================================
+   12. AI CONSOLE
+   ========================================================================= */
+
+.ai-insights-container,
+.ai-board-page {
+  max-width: 1320px;
+}
+
+/* The intelligence header. One warm wash and a gold rule - the same light
+   as the rest of the restaurant. An earlier pass used a violet wash here
+   to say "computed", which read as a different product wearing the same
+   dark theme; the screen is already unmistakably a screen of numbers. */
+.ai-recommendations-banner,
+.ai-board-header {
+  position: relative;
+  padding: clamp(20px, 2.6vw, 30px);
+  margin-bottom: 20px;
+  border: 1px solid var(--pf-line);
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      120deg,
+      rgba(212, 169, 92, 0.09),
+      rgba(212, 169, 92, 0.025) 55%,
+      transparent
+    ),
+    var(--pf-surface-2);
+  box-shadow: var(--pf-elev-1);
+  overflow: hidden;
+}
+
+.ai-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+}
+
+.ai-recommendations-banner h2,
+.ai-board-header h1 {
+  margin: 12px 0 8px;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 600;
+  line-height: 1.18;
+  color: var(--pf-text);
+}
+
+.ai-recommendations-banner p,
+.ai-board-header p {
+  margin: 0;
+  max-width: 66ch;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--pf-text-2);
+}
+
+.ai-badge-chip {
+  display: inline-flex;
+  padding: 6px 13px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pf-gold-light);
+  white-space: nowrap;
+}
+
+.ai-module-nav {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding-bottom: 4px;
+}
+
+.ai-module-nav button,
+.ai-range-chip {
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-glass);
+  color: var(--pf-text-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform var(--pf-dur) var(--pf-ease),
+    border-color var(--pf-dur) var(--pf-ease),
+    background-color var(--pf-dur) var(--pf-ease),
+    color var(--pf-dur) var(--pf-ease);
+}
+
+.ai-module-nav button:hover,
+.ai-range-chip:hover {
+  transform: translateY(-2px);
+  border-color: var(--pf-line-strong);
+  color: var(--pf-text);
+}
+
+.ai-module-nav button.active,
+.ai-range-chip.active {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+}
+
+.ai-module-card,
+.ai-insight-card,
+.ai-rec-card,
+.ai-chart-card,
+.day-forecast-card,
+.complaint-card {
+  position: relative;
+  padding: clamp(15px, 2vw, 20px);
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-shadow);
+}
+
+.ai-insight-card,
+.ai-chart-card {
+  transition:
+    transform var(--pf-dur) var(--pf-ease),
+    border-color var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease);
+}
+
+.ai-insight-card:hover,
+.ai-chart-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--pf-line-strong);
+  box-shadow: var(--pf-shadow-lg);
+}
+
+.ai-stat-grid,
+.ai-grid-line {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.ai-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.ai-bar-label,
+.ai-kicker + span {
+  font-size: 11px;
+  color: var(--pf-text-3);
+}
+
+.bar-track {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gold-gradient);
+  transition: width var(--pf-dur-slow) var(--pf-ease);
+}
+
+.ai-stat-warn {
+  border-color: rgba(224, 164, 88, 0.3);
+  background: var(--pf-warn-bg);
+}
+
+.ai-match-badge {
+  display: inline-flex;
+  padding: 3px 9px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--pf-gold-light);
+}
+
+.ai-data-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+/* ============================================================================
+   13. LIFECYCLE STEPPERS
+
+   Two variants exist: the customer portal's `.lifecycle-stepper` and the
+   admin order modal's `.lifecycle-visual`. Both get the same treatment.
+   ========================================================================= */
+
+.lifecycle-stepper {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin: 18px 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+
+.lifecycle-stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  min-width: 92px;
+  text-align: center;
+}
+
+/* The connector. Drawn as a rule between dots so a completed run reads
+   as one continuous line. */
+.lifecycle-stage::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: -50%;
+  width: 100%;
+  height: 1px;
+  background: var(--pf-line);
+}
+
+.lifecycle-stage:first-child::before {
+  display: none;
+}
+
+.lifecycle-dot,
+.step-circle {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  flex-shrink: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-surface-3);
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--pf-text-3);
+  transition:
+    border-color var(--pf-dur) var(--pf-ease),
+    background-color var(--pf-dur) var(--pf-ease),
+    color var(--pf-dur) var(--pf-ease);
+}
+
+.lifecycle-stage.done .lifecycle-dot,
+.lifecycle-step.completed .step-circle {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+}
+
+.lifecycle-stage.done::before,
+.lifecycle-step.completed::before {
+  background: var(--pf-gold-dark);
+}
+
+.lifecycle-stage.active .lifecycle-dot,
+.lifecycle-step.active .step-circle {
+  border-color: var(--pf-gold);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+  animation: glow-pulse 2.6s var(--pf-ease) infinite;
+}
+
+.lifecycle-label,
+.step-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+  white-space: nowrap;
+}
+
+.lifecycle-stage.active .lifecycle-label,
+.lifecycle-step.active .step-label {
+  color: var(--pf-gold-light);
+}
+
+.lifecycle-visual {
+  margin-bottom: 18px;
+}
+
+.lifecycle-visual h4 {
+  margin: 0 0 14px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.lifecycle-bar {
+  display: flex;
+  gap: 0;
+}
+
+.lifecycle-step {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  text-align: center;
+}
+
+.lifecycle-step::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: -50%;
+  width: 100%;
+  height: 1px;
+  background: var(--pf-line);
+}
+
+.lifecycle-step:first-child::before {
+  display: none;
+}
+
+.lifecycle-step.completed::before {
+  background: var(--pf-gold-dark);
+}
+
+/* ============================================================================
+   14. MODALS
+   ========================================================================= */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vw, 30px);
+  background: rgba(5, 4, 3, 0.76);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: fade-in var(--pf-dur) var(--pf-ease) both;
+}
+
+/* `max-height` plus internal scroll is what keeps a long bill inside a
+   short laptop viewport instead of running off the bottom. */
+.modal-content,
+.order-detail-modal {
+  width: min(760px, 100%);
+  max-height: min(88vh, 900px);
+  overflow-y: auto;
+  padding: clamp(18px, 2.4vw, 26px);
+  border: 1px solid var(--pf-line-strong);
+  border-radius: 22px;
+  background: var(--pf-surface);
+  box-shadow: var(--pf-shadow-lg);
+  animation: scale-in var(--pf-dur-slow) var(--pf-ease) both;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--pf-line);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(19px, 2.4vw, 24px);
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pf-text-2);
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    border-color var(--pf-dur) var(--pf-ease),
+    color var(--pf-dur) var(--pf-ease),
+    transform var(--pf-dur) var(--pf-ease);
+}
+
+.modal-close:hover {
+  transform: rotate(90deg);
+  border-color: var(--pf-line-strong);
+  color: var(--pf-gold);
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.items-list > li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--pf-line-neutral);
+  font-size: 13px;
+}
+
+/* ============================================================================
+   15. GUEST PORTAL
+
+   The customer screens share the shell above, so this section is only what
+   is specific to dining: the greeting, the table they are sitting at, the
+   menu, the cart, and the bill.
+   ========================================================================= */
+
+/* ---- the greeting ---- */
+
+.cp-greeting {
+  position: relative;
+  padding: clamp(24px, 3.4vw, 44px) clamp(20px, 3vw, 40px);
+  margin-bottom: clamp(18px, 2.4vw, 26px);
+  border: 1px solid var(--pf-line);
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      70% 120% at 8% -10%,
+      rgba(212, 169, 92, 0.12),
+      transparent 62%
+    ),
+    var(--pf-surface-2);
+  box-shadow: var(--pf-elev-2);
+  overflow: hidden;
+}
+
+/* One slow warm drift, the way light moves across a room. Stopped
+   entirely for reduced motion. */
+.cp-greeting::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  right: -12%;
+  width: 46%;
+  height: 200%;
+  background: radial-gradient(
+    ellipse,
+    rgba(212, 169, 92, 0.11),
+    transparent 66%
+  );
+  animation: float-soft 12s var(--pf-ease) infinite;
+  pointer-events: none;
+}
+
+.cp-greeting > * {
+  position: relative;
+}
+
+.cp-greeting-eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+}
+
+.cp-greeting h1 {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: clamp(27px, 4.4vw, 46px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--pf-text);
+}
+
+.cp-greeting h1 .gold-text {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cp-greeting p {
+  margin: 0;
+  max-width: 56ch;
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  line-height: 1.7;
+  color: var(--pf-text-2);
+}
+
+/* ---- the table this guest is sitting at ----
+   Reads back from the server, so it reflects the claim rather than
+   anything the browser kept. It sits under the page heading, not in a bar
+   of its own, so it reads as context rather than as chrome. */
+
+.table-context-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: clamp(18px, 2.4vw, 26px);
+  padding: 13px 18px;
+  border: 1px solid var(--pf-line);
+  border-radius: 15px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-elev-1);
+  font-size: 13px;
+  color: var(--pf-text-2);
+}
+
+.table-context-brand {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--pf-gold-light);
+}
+
+.table-context-divider {
+  color: var(--pf-line-strong);
+}
+
+.table-context-table {
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.table-context-bar small {
+  margin-left: auto;
+  color: var(--pf-text-3);
+}
+
+/* ---- the footer ----
+   A single quiet line, set in the display face. App.css gave it a slate
+   band, which on a warm ground read as a stray blue box. */
+
+.customer-footer {
+  padding: 30px 0 10px;
+  margin-top: auto;
+  border-top: 1px solid var(--pf-line-neutral);
+  background: transparent;
+  text-align: center;
+}
+
+.footer-credits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-credits strong {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+
+/* ---- menu, cart, orders, bills ---- */
+
+.menu-tab-view,
+.cart-tab-view,
+.tracking-tab-view,
+.reservations-tab-view,
+.reviews-tab-view,
+.bill-tab-view,
+.loyalty-tab-view,
+.settings-tab-view,
+.overview-tab-view {
+  animation: fade-up var(--pf-dur-slow) var(--pf-ease) both;
+}
+
+/* The guest's own menu. Large photography, the dish named plainly, and a
+   card that lifts a few millimetres and lets the picture come forward on
+   hover. No rotation: a tilted menu is a gimmick, not a restaurant. */
+.digital-menu-grid {
+  perspective: 1400px;
+}
+
+.menu-card,
+.recs-card,
+.ai-rec-card {
+  transition:
+    transform 260ms var(--pf-ease),
+    box-shadow 260ms var(--pf-ease),
+    border-color 260ms var(--pf-ease);
+}
+
+@media (hover: hover) {
+  .menu-card:hover,
+  .recs-card:hover,
+  .ai-rec-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--pf-line-strong);
+    box-shadow: var(--pf-elev-3);
+  }
+
+  /* The photograph moves forward, not the whole card. This is the same
+     move the public site makes with `.food-card`, so the menu reads as the
+     same object in two places. */
+  .menu-card:hover .menu-card-img,
+  .recs-card:hover .recs-card-image,
+  .ai-rec-card:hover .ai-rec-img-wrap img {
+    transform: scale(1.05);
+  }
+}
+
+.menu-card-img,
+.recs-card-image,
+.ai-rec-img-wrap img {
+  transition: transform 620ms var(--pf-ease);
+}
+
+.cart-line {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--pf-line-neutral);
+}
+
+.cart-line img {
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.cart-line strong {
+  display: block;
+  font-size: 14px;
+  color: var(--pf-text);
+}
+
+.cart-totals {
+  padding: 16px 0 0;
+  margin-top: 14px;
+  border-top: 1px solid var(--pf-line);
+}
+
+.cart-totals > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13.5px;
+  color: var(--pf-text-2);
+}
+
+.cart-totals strong {
+  color: var(--pf-text);
+}
+
+.cart-grand,
+.cart-total-row.cart-grand {
+  margin-top: 6px;
+  padding-top: 11px !important;
+  border-top: 1px solid var(--pf-line);
+  font-size: 15px !important;
+}
+
+.cart-grand strong {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--pf-gold-light);
+}
+
+.order-guarantee {
+  margin: 16px 0 0;
+  padding: 11px 14px;
+  border: 1px dashed var(--pf-line);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--pf-text-3);
+}
+
+/* ---- the bill, as a piece of paper ----
+   Dark stock, thin rules, one gold total. A receipt is a document, and a
+   document is laid out rather than decorated. */
+
+.history-bill {
+  position: relative;
+  padding: clamp(16px, 2vw, 22px);
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  /* Very slightly warmer and flatter than a card: paper under the same
+     light does not cast a shadow the way a raised surface does. */
+  background: linear-gradient(
+    180deg,
+    rgba(26, 23, 18, 0.96),
+    rgba(19, 17, 13, 0.96)
+  );
+  box-shadow: var(--pf-elev-2), var(--pf-rim);
+}
+
+.history-bill.history-paid {
+  border-left: 3px solid var(--pf-ok);
+}
+
+.history-bill.history-partially_paid {
+  border-left: 3px solid var(--pf-warn);
+}
+
+.history-bill.history-unpaid {
+  border-left: 3px solid var(--pf-text-3);
+}
+
+.history-bill-head {
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--pf-line);
+}
+
+.history-bill-lines > div {
+  padding: 4px 0;
+}
+
+.history-bill-lines strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.history-total-line strong {
+  font-family: var(--font-display);
+  font-size: 21px;
+  color: var(--pf-gold-light);
+}
+
+.history-bill-foot {
+  padding-top: 11px;
+  border-top: 1px dashed var(--pf-line);
+}
+
+.history-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.history-total {
+  padding: 14px 16px;
+  border: 1px solid var(--pf-line);
+  border-radius: 14px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-elev-1);
+}
+
+.history-total strong {
+  font-family: var(--font-display);
+  font-size: 21px;
+  color: var(--pf-text);
+}
+
+/* ---- reservations ---- */
+
+.history-state,
+.res-state {
+  display: inline-flex;
+  padding: 4px 12px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pf-text-2);
+  white-space: nowrap;
+}
+
+.history-state-paid {
+  border-color: rgba(111, 202, 155, 0.3);
+  background: var(--pf-ok-bg);
+  color: var(--pf-ok);
+}
+
+.history-state-partially_paid {
+  border-color: rgba(224, 164, 88, 0.3);
+  background: var(--pf-warn-bg);
+  color: var(--pf-warn);
+}
+
+.history-state-unpaid {
+  color: var(--pf-text-3);
+}
+
+/* ---- reservations pass ---- */
+
+.res-pass-card {
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-elev-2);
+  overflow: hidden;
+}
+
+/* ============================================================================
+   16. TYPOGRAPHY REFINEMENTS
+   ========================================================================= */
+
+.app p,
+.customer-portal p {
+  line-height: 1.7;
+}
+
+/* Tabular figures on every money cell, so columns of currency line up
+   and a digit changing does not shift its neighbours. */
+.stat-card strong,
+.detail-grid strong,
+.hero-metric strong,
+.cart-grand strong,
+.history-total strong,
+.history-bill-lines strong,
+.pay-amount,
+.premium-table td,
+.table-card td,
+.table-responsive td {
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.012em;
+}
+
+/* Small caps metadata, used everywhere in this product. */
+.field > span,
+.form-group label,
+.detail-grid label,
+.stat-card h3,
+.table-card th,
+.table-responsive th,
+.table-container th {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--pf-text-3);
+}
+
+/* ============================================================================
+   17. RESPONSIVE
+
+   Three behaviours, in order of how far the window has closed:
+
+     1080px  the sidebar stops being furniture and becomes a drawer
+      768px  two columns become one, and the lifecycle stepper goes vertical
+      430px  everything is a single column and every button is full width
+
+   Below 320px the same rules simply have less room, so nothing new is
+   needed - which is the point of testing at that width at all.
+   ========================================================================= */
+
+@media (max-width: 1280px) {
+  .shell-sidebar {
+    width: 258px;
+  }
+
+  .shell-collapsed .shell-sidebar {
+    width: 76px;
+  }
+
+  .dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-panels,
+  .dashboard-panels.lower-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- the drawer ---- */
+
+@media (max-width: 1080px) {
+  .shell-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 288px;
+    transform: translateX(-100%);
+    transition: transform var(--pf-dur-slow) var(--pf-ease);
+  }
+
+  .shell-drawer-open .shell-sidebar {
+    transform: none;
+    box-shadow: var(--pf-elev-4);
+  }
+
+  .shell-drawer-open .shell-scrim {
+    display: block;
+  }
+
+  .shell-drawer-close,
+  .shell-menu-button {
+    display: grid;
+  }
+
+  /* A rail cannot be collapsed once it is covering the page, so the
+     collapse control is withdrawn with it. */
+  .shell-collapse {
+    display: none;
+  }
+
+  /* The labels come back: on a drawer there is room for them, and a drawer
+     full of unlabelled icons would be a puzzle. */
+  .shell-collapsed .shell-sidebar {
+    width: 288px;
+  }
+
+  .shell-collapsed .shell-brand-text,
+  .shell-collapsed .shell-nav-group-label,
+  .shell-collapsed .shell-nav-copy,
+  .shell-collapsed .shell-account-copy,
+  .shell-collapsed .shell-signout .shell-nav-label {
+    display: revert;
+  }
+
+  .shell-collapsed .shell-brand {
+    justify-content: flex-start;
+    padding-inline: 20px;
+  }
+
+  .shell-collapsed .shell-nav {
+    padding-inline: 12px;
+  }
+
+  .shell-collapsed .shell-nav-item,
+  .shell-collapsed .shell-signout,
+  .shell-collapsed .shell-account-card {
+    justify-content: flex-start;
+    padding-inline: 12px;
+  }
+
+  .shell-collapsed .shell-nav-badge {
+    position: static;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 6px;
+    font-size: 10.5px;
+    border-color: var(--pf-line);
+    background: var(--pf-gold-faint);
+  }
+
+  /* Nothing hovers on a touch screen, so a tooltip that only appears on
+     hover would simply never be seen. The drawer carries a title instead. */
+  .shell-collapsed .shell-nav-item[data-tip]::after,
+  .shell-collapsed .shell-signout[data-tip]::after {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .kitchen-workflow {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .shell-page {
+    padding: 18px 14px 40px;
+  }
+
+  .shell-utility {
+    min-height: 56px;
+  }
+
+  .stats-grid,
+  .mini-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 11px;
+  }
+
+  .stat-card {
+    padding: 14px 15px;
+  }
+
+  .table-context-bar {
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .table-context-bar small {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  /* A single line of explanation about how the ranking works, allowed to
+     wrap instead of running off the side of a phone. */
+  .shell-root .ai-badge-chip {
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.55;
+  }
+
+  /* The category filter is a scroll strip on a desktop, where a single row
+     of ten pills is tidier than two. On a phone every pill has to be
+     reachable without discovering that the row scrolls. */
+  .shell-root .category-pills {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+
+  .detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 13px 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* One line per step rather than a horizontal scroll the reader has to
+     discover. */
+  .lifecycle-stepper,
+  .lifecycle-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: visible;
+  }
+
+  .lifecycle-stage,
+  .lifecycle-step {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    width: 100%;
+    text-align: left;
+  }
+
+  /* The connector rotates to vertical. */
+  .lifecycle-stage::before,
+  .lifecycle-step::before {
+    top: -50%;
+    left: 13px;
+    width: 1px;
+    height: 100%;
+  }
+
+  .lifecycle-label,
+  .step-label {
+    white-space: normal;
+  }
+
+  .modal-content,
+  .order-detail-modal {
+    max-height: 92vh;
+  }
+
+  .history-totals {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  .stats-grid,
+  .mini-grid,
+  .history-totals,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shell-page-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cp-greeting h1 {
+    font-size: clamp(24px, 8.4vw, 32px);
+  }
+
+  /* Labels and controls stack so nothing is squeezed under 44px. */
+  .form-actions,
+  .dashboard-actions,
+  .pay-actions,
+  .pay-attempt-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .action-btn,
+  .edit-btn,
+  .delete-btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .kitchen-workflow {
+    grid-template-columns: 1fr;
+  }
+
+  .bar-chart {
+    height: 158px;
+    gap: 5px;
+  }
+
+  .bar-value {
+    display: none;
+  }
+
+  .modal-backdrop {
+    padding: 0;
+  }
+
+  .modal-content,
+  .order-detail-modal {
+    width: 100%;
+    max-height: 100vh;
+    max-height: 100dvh;
+    height: 100%;
+    border-radius: 0;
+    border: 0;
+  }
+
+  .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--pf-surface);
+  }
+}
+
+@media (max-width: 375px) {
+  .stats-grid,
+  .mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card strong {
+    font-size: 27px;
+  }
+
+  .shell-account-copy strong {
+    max-width: 110px;
+  }
+
+  /* On a drawer the brand and the close button share one narrow row, so
+     the wordmark's tracking tightens rather than pushing the button off
+     the edge. */
+  .shell-brand {
+    padding: 18px 14px 16px;
+    gap: 10px;
+  }
+
+  .shell-brand-text span {
+    letter-spacing: 0.18em;
+    font-size: 8px;
+  }
+}
+
+
+/* 320px: the floor. Everything a single column, nothing that needs a
+   second row of viewport. */
+@media (max-width: 320px) {
+  .shell-page {
+    padding: 14px 11px 32px;
+  }
+
+  .shell-utility {
+    padding-inline: 11px;
+  }
+
+  .cart-line {
+    flex-wrap: wrap;
+  }
+
+  .cp-greeting {
+    padding: 20px 16px;
+  }
+
+  .table-context-bar {
+    padding: 11px 12px;
+  }
+}
+
+/* A touch screen has no hover, so every hover-only movement is switched
+   off. The lift is a pointer affordance; on touch it is just a jump. */
+@media (hover: none) {
+  .shell-nav-item:hover,
+  .shell-signout:hover,
+  .shell-menu-button:hover,
+  .shell-collapse:hover {
+    transform: none;
+  }
+
+  .menu-card,
+  .recs-card,
+  .ai-rec-card {
+    transform: none !important;
+  }
+
+  .menu-card-img,
+  .recs-card-image,
+  .ai-rec-img-wrap img {
+    transform: none !important;
+  }
+}
+
+/* ============================================================================
+   18. LOGIN
+
+   The sign-in form is the one screen that has to bridge two worlds: the
+   public site and the authenticated shell. It uses the same dark ground,
+   the same warm light from the upper left, the same gold, the same display
+   face and the same four elevation levels - so signing in reads as a door
+   being opened rather than as a change of application.
+
+   The markup is a split screen added in Auth.jsx.
+   ========================================================================= */
+
+.auth-page {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  /* App.css centres this grid with `place-items: center`, which would
+     shrink the two panels to their content width instead of filling the
+     viewport. Stretch is what a split screen needs. */
+  place-items: stretch;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0;
+  background: var(--pf-bg);
+  color: var(--pf-text);
+}
+
+.auth-page.embedded {
+  display: block;
+  min-height: 0;
+}
+
+/* The same form also opens inside the public site's sign-in dialog. A
+   split screen inside a dialog is wrong, so the branding panel is dropped
+   there and the form goes back to a single column. This must live in
+   portal.css rather than premium.css, because portal.css is imported
+   afterwards and therefore wins. */
+.auth-modal .auth-page {
+  display: block;
+  grid-template-columns: none;
+  min-height: 0;
+  padding: 30px 28px 32px;
+  background: transparent;
+}
+
+.auth-modal .auth-visual {
+  display: none;
+}
+
+.auth-visual {
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.auth-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(9, 8, 6, 0.82) 0%,
+    rgba(9, 8, 6, 0.42) 55%,
+    rgba(9, 8, 6, 0.9) 100%
+  );
+}
+
+.auth-visual-copy {
+  position: absolute;
+  inset: auto 0 0;
+  padding: clamp(26px, 4vw, 54px);
+}
+
+.auth-visual-copy .eyebrow {
+  color: var(--pf-gold);
+}
+
+.auth-visual-copy h2 {
+  margin: 14px 0 12px;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.6vw, 42px);
+  font-weight: 600;
+  line-height: 1.14;
+  color: var(--pf-text);
+}
+
+.auth-visual-copy p {
+  margin: 0;
+  max-width: 42ch;
+  font-size: 13.5px;
+  line-height: 1.72;
+  color: var(--pf-text-2);
+}
+
+.auth-visual-brand {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--pf-line);
+}
+
+/* The form panel is elevation 3 against the photography: it is the half
+   of the screen the light is not bouncing off of. */
+.auth-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: clamp(26px, 4vw, 56px);
+  background: var(--pf-surface);
+  box-shadow: -1px 0 0 rgba(255, 243, 220, 0.04), var(--pf-elev-2);
+}
+
+/* The same lit edge every other surface in the product has, so the form
+   sits in the same room as the sidebar and the cards. */
+.auth-form::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 243, 220, 0.09),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.auth-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 15px;
+  /* A bevel, not a glow - the same treatment as the shell's brand mark. */
+  background: linear-gradient(
+    145deg,
+    rgba(244, 210, 138, 0.16),
+    rgba(141, 100, 47, 0.06)
+  );
+  box-shadow: var(--pf-rim), 0 6px 18px rgba(0, 0, 0, 0.36);
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--pf-gold-light);
+}
+
+.auth-brand-text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  color: var(--pf-text);
+}
+
+.auth-brand-text span {
+  display: block;
+  margin-top: 4px;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+}
+
+.auth-form h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.26);
+  color: var(--pf-text);
+  font-family: inherit;
+  font-size: 14px;
+  transition:
+    border-color var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease);
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--pf-gold);
+  box-shadow: 0 0 0 3px rgba(212, 169, 92, 0.12);
+}
+
+.auth-roles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.auth-role {
+  min-height: 44px;
+  padding: 11px;
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--pf-text-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color var(--pf-dur) var(--pf-ease),
+    background-color var(--pf-dur) var(--pf-ease),
+    color var(--pf-dur) var(--pf-ease);
+}
+
+.auth-role:hover {
+  border-color: var(--pf-line-strong);
+  color: var(--pf-text);
+}
+
+.auth-role.active {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--pf-line);
+}
+
+.auth-submit {
+  min-height: 48px;
+  padding: 14px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--pf-shadow-gold);
+  transition:
+    transform var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease);
+}
+
+.auth-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 50px rgba(212, 169, 92, 0.3);
+}
+
+.auth-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.auth-demo-btn,
+.auth-switch {
+  min-height: 44px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pf-text-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color var(--pf-dur) var(--pf-ease),
+    color var(--pf-dur) var(--pf-ease),
+    background-color var(--pf-dur) var(--pf-ease);
+}
+
+.auth-demo-btn:hover,
+.auth-switch:hover:not(:disabled) {
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-text);
+}
+
+.auth-error {
+  margin: 0;
+  padding: 11px 14px;
+  border: 1px solid rgba(217, 100, 89, 0.32);
+  border-radius: 12px;
+  background: var(--pf-danger-bg);
+  color: #f2a79f;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.auth-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--pf-text-3);
+}
+
+@media (max-width: 900px) {
+  /* One column: branding, then the form. */
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-visual {
+    min-height: 210px;
+  }
+
+  .auth-visual-copy {
+    padding: 22px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-visual {
+    min-height: 168px;
+  }
+
+  .auth-form {
+    padding: 24px 18px 34px;
+  }
+
+  .auth-roles {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   19. REDUCED MOTION
+
+   These screens are used all day. If the OS asks for less movement, it
+   gets less movement - including the ambient glows.
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-sidebar,
+  .shell-nav-item,
+  .shell-signout,
+  .shell-menu-button,
+  .shell-collapse,
+  .stat-card,
+  .ai-insight-card,
+  .ai-chart-card,
+  .kitchen-order-card,
+  .primary-btn,
+  .secondary-btn,
+  .action-btn,
+  .modal-backdrop,
+  .modal-content,
+  .order-detail-modal,
+  .empty-state,
+  .menu-tab-view,
+  .cart-tab-view,
+  .tracking-tab-view,
+  .reservations-tab-view,
+  .reviews-tab-view,
+  .bill-tab-view,
+  .loyalty-tab-view,
+  .settings-tab-view,
+  .overview-tab-view,
+  .bar {
+    animation: none !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .status-dot,
+  .cp-greeting::after,
+  .lifecycle-stage.active .lifecycle-dot,
+  .lifecycle-step.active .step-circle {
+    animation: none !important;
+  }
+
+  /* The lift is movement, so it goes with everything else. The gold and
+     the lit edge stay: they are the interface, not the animation. */
+  .stat-card:hover,
+  .ai-insight-card:hover,
+  .ai-chart-card:hover,
+  .kitchen-order-card:hover,
+  .primary-btn:hover,
+  .secondary-btn:hover,
+  .action-btn:hover,
+  .modal-close:hover,
+  .shell-nav-item:hover,
+  .shell-signout:hover,
+  .shell-menu-button:hover,
+  .shell-collapse:hover {
+    transform: none;
+  }
+
+  .shell-root .menu-card:hover,
+  .shell-root .recs-card:hover,
+  .shell-root .ai-rec-card:hover {
+    transform: none;
+  }
+
+  .shell-root .menu-card:hover .menu-card-img,
+  .shell-root .recs-card:hover .recs-card-image,
+  .shell-root .ai-rec-card:hover .ai-rec-img-wrap img {
+    transform: none;
+  }
+}
+
+
+/* ============================================================================
+   20. THE OLD LIGHT LAYER, REPAINTED
+
+   App.css is a light-theme stylesheet. portal.css had been overriding the
+   shell, the KPI cards, the tables and the forms, but a long tail of
+   components - chips, pills, menu cards, kitchen tickets, the payment
+   ledger, the AI charts - were still being drawn in near-black text on
+   white, which is what made the signed-in application read as a different
+   product from the landing page.
+
+   This section repaints that tail in the same light as everything above
+   it. It is one layer, not a second design system: every rule here points
+   at the same tokens, the same four elevation levels, and the same warm
+   accent. Grouped by what it fixes rather than by which file it came from.
+   ========================================================================= */
+
+/* ---- 20.1 form controls, at last scoped ----
+   App.css styles `input`, `select` and `textarea` bare, which reaches the
+   public site as well as the portal. Scoping the override to the shell
+   repaints the portal without touching the marketing pages. */
+
+.shell-root input:not([type="checkbox"]):not([type="radio"]),
+.shell-root select,
+.shell-root textarea {
+  background: rgba(0, 0, 0, 0.26);
+  border-color: var(--pf-line);
+  color: var(--pf-text);
+}
+
+.shell-root input::placeholder,
+.shell-root textarea::placeholder {
+  color: var(--pf-text-3);
+}
+
+.shell-root input:focus,
+.shell-root select:focus,
+.shell-root textarea:focus {
+  outline: none;
+  border-color: var(--pf-gold);
+  box-shadow: 0 0 0 3px rgba(212, 169, 92, 0.12);
+}
+
+/* A checkbox and a radio are a different object: a small lit square, not
+   a filled text field. */
+.shell-root input[type="checkbox"],
+.shell-root input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--pf-gold);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--pf-line-strong);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.shell-root input[type="radio"] {
+  border-radius: 999px;
+}
+
+.shell-root .checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 44px;
+  color: var(--pf-text-2);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+/* ---- 20.2 page padding ----
+   The shell owns the page gutter now. A page that also carries its own
+   container padding would be inset twice, which is most of why the old
+   screens looked crowded. */
+
+.shell-root .page-container,
+.shell-root .dashboard-page,
+.shell-root .recs-tab-view,
+.shell-root .bill-tab-view,
+.shell-root .premium-page {
+  padding: 0;
+  max-width: none;
+}
+
+/* Each page component still prints a heading of its own. The shell already
+   prints one, so the page's copy is withdrawn and only the controls the
+   page carries - filters, switches, ranges - are kept, right-aligned above
+   the content. `:first-child` covers the common shape of a title wrapper,
+   and the bare headings cover the pages that put the heading straight in
+   the header. */
+
+.shell-root .page-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 0;
+}
+
+.shell-root .page-header > :first-child,
+.shell-root .page-header > :is(h1, h2, h3, p, .section-desc, .ai-kicker) {
+  display: none;
+}
+
+
+/* ---- 20.3 surfaces ----
+   One card, one recipe. Anything that is a raised surface gets the same
+   hairline, the same warm fill and the same lit top edge, so a page built
+   from a dozen different components still looks like one table. */
+
+.shell-root :is(
+    .card,
+    .panel,
+    .table-card,
+    .form-card,
+    .detail-section,
+    .summary-panel,
+    .chart-panel,
+    .operations-panel,
+    .menu-panel,
+    .menu-summary-card,
+    .cart-items-card,
+    .dining-options-card,
+    .summary-card,
+    .order-history,
+    .order-track-card,
+    .active-order-tracker,
+    .payment-status-card,
+    .voucher-card,
+    .waste-stat-card,
+    .waste-breakdown-card,
+    .waste-rec-box,
+    .recs-card,
+    .ai-rec-card,
+    .ai-module-card,
+    .ai-insight-card,
+    .ai-chart-card,
+    .ai-assistant-card,
+    .ai-answer-chart,
+    .ai-answer-table,
+    .ai-data-table,
+    .ai-data-table table,
+    .rec-result-card,
+    .nlp-sandbox-card,
+    .sandbox-result-box,
+    .kitchen-column,
+    .kitchen-order-card,
+    .settings-card,
+    .loyalty-hero-card,
+    .tier-progress-card,
+    .settle-tile,
+    .settle-panel,
+    .settle-gateway-note,
+    .pay-panel,
+    .pay-attempt,
+    .pay-reconcile,
+    .settle-provider-bar,
+    .bulk-action-bar,
+    .selection-action-bar,
+    .image-library-thumb,
+    .image-preview-box,
+    .menu-image-picker,
+    .qr-preview-card,
+    .dish-modal,
+    .dish-modal-body,
+    .empty-column,
+    .nlp-sandbox-card
+  ) {
+  color: var(--pf-text-2);
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  box-shadow: var(--pf-elev-1);
+}
+
+/* The lit top edge. One hairline gradient, no extra element. */
+.shell-root :is(
+    .card,
+    .panel,
+    .table-card,
+    .form-card,
+    .detail-section,
+    .summary-card,
+    .order-track-card,
+    .active-order-tracker,
+    .voucher-card,
+    .ai-module-card,
+    .ai-insight-card,
+    .ai-chart-card,
+    .rec-result-card,
+    .settle-tile,
+    .settle-panel,
+    .pay-panel,
+    .pay-attempt,
+    .loyalty-hero-card,
+    .tier-progress-card
+  )::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 169, 92, 0.32),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.shell-root :is(
+    .card,
+    .panel,
+    .table-card,
+    .form-card,
+    .detail-section,
+    .summary-card,
+    .order-track-card,
+    .active-order-tracker,
+    .voucher-card,
+    .ai-module-card,
+    .ai-insight-card,
+    .ai-chart-card,
+    .rec-result-card,
+    .settle-tile,
+    .settle-panel,
+    .pay-panel,
+    .pay-attempt,
+    .loyalty-hero-card,
+    .tier-progress-card
+  ) {
+  position: relative;
+}
+
+/* A panel that has to hold a heading keeps its own top padding. */
+.shell-root :is(.card, .panel, .table-card, .form-card, .detail-section) {
+  padding: clamp(16px, 2vw, 22px);
+  margin-bottom: 18px;
+}
+
+.shell-root :is(.card, .panel) h2,
+.shell-root :is(.card, .panel) h3,
+.shell-root .settings-card h2,
+.shell-root .table-card h2,
+.shell-root .form-card h2,
+.shell-root .qr-preview-card h3,
+.shell-root .order-history-head h3,
+.shell-root .all-orders-table summary h3,
+.shell-root .waste-rec-box h3,
+.shell-root .res-pass-card h3 {
+  color: var(--pf-text);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+/* ---- 20.4 menu cards, for the guest ----
+   The customer's menu is the page the landing site promised, so it gets
+   the landing site's card: real photography on top, the name in the
+   display face, the price in gold, and a hover that moves the photograph
+   forward rather than tilting the card. */
+
+.shell-root .digital-menu-grid {
+  perspective: 1400px;
+  gap: clamp(16px, 2vw, 24px);
+}
+
+.shell-root .menu-card {
+  padding: 0;
+  overflow: hidden;
+  background: var(--pf-glass);
+  border: 1px solid var(--pf-line);
+  border-radius: 20px;
+  box-shadow: var(--pf-elev-2);
+  transition:
+    transform 260ms var(--pf-ease),
+    box-shadow 260ms var(--pf-ease),
+    border-color 260ms var(--pf-ease);
+}
+
+.shell-root .card-image-wrap {
+  height: auto;
+  aspect-ratio: 4 / 3;
+  background: var(--pf-surface-3);
+  border-bottom: 1px solid var(--pf-line-neutral);
+}
+
+.shell-root .card-header-row h3,
+.shell-root .menu-card-content h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+.shell-root .dish-price {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pf-gold-light);
+}
+
+.shell-root .dish-category,
+.shell-root .food-description,
+.shell-root .dish-description,
+.shell-root .dish-meta-line,
+.shell-root .dish-meta-cell {
+  color: var(--pf-text-3);
+}
+
+.shell-root .sold-out-overlay {
+  background: rgba(9, 8, 6, 0.66);
+  color: var(--pf-text);
+}
+
+.shell-root .diet-badge {
+  border: 1px solid rgba(245, 241, 232, 0.16);
+  background: rgba(9, 8, 6, 0.8);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.shell-root .diet-badge.veg,
+.shell-root .food-veg-yes {
+  color: #7ddc9a;
+}
+
+.shell-root .diet-badge.non-veg,
+.shell-root .diet-mini {
+  border: 1px solid var(--pf-line);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.shell-root .diet-mini.nonveg,
+.shell-root .food-veg-no {
+  color: #f0a49b;
+}
+
+.shell-root .diet-mini.veg,
+.shell-root .food-veg-yes {
+  color: #7ddc9a;
+}
+
+
+.shell-root .featured-ribbon {
+  border: 1px solid var(--pf-line-strong);
+  background: rgba(9, 8, 6, 0.82);
+  color: var(--pf-gold-light);
+}
+
+.shell-root .card-zoom-hint {
+  background: rgba(9, 8, 6, 0.78);
+  border: 1px solid var(--pf-line);
+  color: var(--pf-gold-light);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.shell-root .fav-btn {
+  border: 1px solid var(--pf-line);
+  background: rgba(9, 8, 6, 0.8);
+  color: var(--pf-text-2);
+}
+
+.shell-root .fav-btn:hover {
+  border-color: var(--pf-line-strong);
+  color: var(--pf-gold);
+}
+
+.shell-root .fav-btn.active {
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+/* ---- 20.5 chips, pills and small controls ----
+   A chip is a label, not a button. It gets a hairline and a quiet fill;
+   the selected one gets the gold. */
+
+.shell-root :is(
+    .cat-pill,
+    .diet-chip,
+    .history-filter-btn,
+    .status-filter-tabs button,
+    .pill-switch button,
+    .pay-view-switch button,
+    .ai-range-chip,
+    .ai-suggestion-chip,
+    .featured-chip,
+    .modal-meta-chip,
+    .recs-chip,
+    .ai-badge-chip
+  ) {
+  color: var(--pf-text-2);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  transition:
+    background-color 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease),
+    transform 200ms var(--pf-ease);
+}
+
+.shell-root :is(
+    .cat-pill:hover,
+    .diet-chip:hover,
+    .history-filter-btn:hover,
+    .status-filter-tabs button:hover,
+    .pill-switch button:hover,
+    .pay-view-switch button:hover,
+    .featured-chip:hover
+  ) {
+  transform: translateY(-1px);
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-text);
+}
+
+.shell-root :is(
+    .cat-pill.active,
+    .diet-chip.active,
+    .history-filter-btn.active,
+    .status-filter-tabs button.active,
+    .pill-switch button.active,
+    .pay-view-switch button.active,
+    .featured-chip.active
+  ) {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+}
+
+/* A filter row that is a set of tabs wants a little more room than a
+   chip does, and a resting state that is clearly not a button. */
+.shell-root :is(.status-filter-tabs button, .pill-switch button, .pay-view-switch button) {
+  min-height: 44px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shell-root .count-badge,
+.shell-root .info-badge,
+.shell-root .cart-badge {
+  border: 1px solid var(--pf-line);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+/* ---- 20.6 buttons ---- */
+
+.shell-root :is(
+    .add-btn,
+    .view-cart-btn,
+    .redeem-btn,
+    .redeem-action-btn,
+    .clear-search-btn,
+    .image-upload-btn,
+    .bulk-button,
+    .dev-action,
+    .ops-clear-btn,
+    .transition-btn,
+    .kitchen-action-btn
+  ) {
+  color: var(--pf-text);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease);
+}
+
+.shell-root :is(
+    .add-btn:hover,
+    .view-cart-btn:hover,
+    .redeem-btn:hover,
+    .redeem-action-btn:hover,
+    .image-upload-btn:hover,
+    .bulk-button:hover:not(:disabled),
+    .dev-action:hover:not(:disabled),
+    .transition-btn:hover
+  ) {
+  transform: translateY(-2px);
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+.shell-root :is(.add-to-cart-btn-primary, .checkout-btn) {
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shell-root .add-to-cart-btn-primary {
+  color: var(--pf-ink);
+  background: var(--gold-gradient);
+  border: 1px solid transparent;
+  box-shadow: var(--pf-shadow-gold);
+}
+
+.shell-root .add-to-cart-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 44px rgba(212, 169, 92, 0.26);
+}
+
+.shell-root .checkout-btn {
+  color: var(--pf-ink);
+  background: var(--gold-gradient);
+  border: 1px solid transparent;
+  box-shadow: var(--pf-shadow-gold);
+  min-height: 46px;
+}
+
+.shell-root .checkout-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.shell-root .checkout-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.shell-root .cart-stepper button,
+.shell-root .cart-stepper .stepper-btn {
+  min-width: 40px;
+  min-height: 40px;
+  color: var(--pf-text);
+  background: rgba(0, 0, 0, 0.26);
+  border: 1px solid var(--pf-line);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease);
+}
+
+.shell-root .cart-stepper button:hover {
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+}
+
+.shell-root .mode-radio {
+  color: var(--pf-text-2);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease);
+}
+
+.shell-root .mode-radio:hover {
+  border-color: var(--pf-line-strong);
+  color: var(--pf-text);
+}
+
+.shell-root .mode-radio.active {
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+.shell-root .search-box input {
+  background: rgba(0, 0, 0, 0.26);
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  color: var(--pf-text);
+}
+
+.shell-root .search-box .search-icon,
+.shell-root .clear-search-btn {
+  color: var(--pf-text-3);
+}
+
+.shell-root .clear-search-btn:hover {
+  color: var(--pf-gold);
+}
+
+.shell-root .disabled-input {
+  color: var(--pf-text-3);
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px dashed var(--pf-line);
+}
+
+/* ---- 20.7 status, states and lifecycle ----
+   One hue per meaning, taken from the same four the rest of the product
+   uses. Nothing is coloured for decoration. */
+
+.shell-root .status-pill,
+.shell-root .payment-status-pill,
+.shell-root .payment-status,
+.shell-root .pay-state-badge,
+.shell-root .history-state,
+.shell-root .res-state,
+.shell-root .order-tag,
+.shell-root .table-badge,
+.shell-root .panel-tag,
+.shell-root .ai-module-badge,
+.shell-root .price-change-pill,
+.shell-root .recs-trending-badge,
+.shell-root .ai-match-badge,
+.shell-root .settle-mode {
+  border: 1px solid var(--pf-line);
+  background: var(--pf-gold-faint);
+  color: var(--pf-text-2);
+}
+
+.shell-root :is(
+    .status-pill.placed,
+    .status-pill.confirmed,
+    .status-pill.preparing,
+    .status-pill.ready,
+    .status-pill.served
+  ) {
+  border-color: var(--pf-line);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+.shell-root :is(.status-pill.cancelled, .pay-state-failed, .pay-state-cancelled) {
+  border-color: rgba(217, 100, 89, 0.3);
+  background: var(--pf-danger-bg);
+  color: var(--pf-danger);
+}
+
+.shell-root :is(.status-pill.paid, .pay-state-success, .history-state-paid) {
+  border-color: rgba(111, 202, 155, 0.3);
+  background: var(--pf-ok-bg);
+  color: var(--pf-ok);
+}
+
+.shell-root :is(
+    .status-pill.pending,
+    .status-pill.preparing,
+    .status-pill.ready,
+    .pay-state-pending,
+    .history-state-partially_paid,
+    .payment-status-pill.pending,
+    .payment-status.pending
+  ) {
+  border-color: rgba(224, 164, 88, 0.3);
+  background: var(--pf-warn-bg);
+  color: var(--pf-warn);
+}
+
+.shell-root :is(.payment-status.unpaid, .payment-status-pill.unpaid, .history-state-unpaid) {
+  border-color: var(--pf-line);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--pf-text-3);
+}
+
+.shell-root :is(.payment-status.refunded, .payment-status-pill.refunded, .price-change-pill.decrease) {
+  border-color: rgba(127, 168, 232, 0.28);
+  background: var(--pf-info-bg);
+  color: var(--pf-info);
+}
+
+.shell-root :is(.price-change-pill.increase, .settle-tile-outstanding strong) {
+  color: var(--pf-danger);
+}
+
+.shell-root .payment-label,
+.shell-root .pay-panel-title,
+.shell-root .settle-tile-label,
+.shell-root .history-total-label,
+.shell-root .detail-grid label,
+.shell-root .detail-item label,
+.shell-root .form-group label,
+.shell-root .pay-range-row label,
+.shell-root .pay-filter-row label {
+  color: var(--pf-text-3);
+}
+
+.shell-root .payment-status-card small,
+.shell-root .pay-panel-note,
+.shell-root .pay-panel-off,
+.shell-root .settle-provider-note,
+.shell-root .settle-tile-sub,
+.shell-root .ops-answer-note,
+.shell-root .rec-reason,
+.shell-root .recs-limitations,
+.shell-root .order-guarantee,
+.shell-root .history-item-qty,
+.shell-root .history-item-total,
+.shell-root .pay-attempt-meta,
+.shell-root .cart-unit-price,
+.shell-root .cart-prep-hint,
+.shell-root .wait-hint,
+.shell-root .order-time,
+.shell-root .item-notes,
+.shell-root .item-price,
+.shell-root .table-item .notes,
+.shell-root .ops-section-limit,
+.shell-root .ai-answer-note {
+  color: var(--pf-text-3);
+}
+
+/* The stepper: a rule between dots, gold once it has been passed. */
+.shell-root .stage-circle,
+.shell-root .step-circle {
+  color: var(--pf-text-3);
+  background: var(--pf-surface-3);
+  border: 1px solid var(--pf-line);
+}
+
+.shell-root .stage-circle.placed,
+.shell-root .stage-circle.confirmed {
+  border-color: var(--pf-line);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+.shell-root .stage-circle.preparing,
+.shell-root .stage-circle.ready {
+  border-color: rgba(224, 164, 88, 0.34);
+  background: var(--pf-warn-bg);
+  color: var(--pf-warn);
+}
+
+.shell-root .stage-circle.served {
+  border-color: rgba(111, 202, 155, 0.32);
+  background: var(--pf-ok-bg);
+  color: var(--pf-ok);
+}
+
+.shell-root .stage-circle.cancelled {
+  border-color: rgba(217, 100, 89, 0.3);
+  background: var(--pf-danger-bg);
+  color: var(--pf-danger);
+}
+
+.shell-root .stage-label,
+.shell-root .step-label,
+.shell-root .lifecycle-label {
+  color: var(--pf-text-3);
+}
+
+.shell-root .stage-label.active,
+.shell-root .step-label.active,
+.shell-root .lifecycle-label.active {
+  color: var(--pf-gold-light);
+}
+
+.shell-root .stage-line,
+.shell-root .lifecycle-stage::before,
+.shell-root .lifecycle-step::before {
+  background: var(--pf-line);
+}
+
+.shell-root .stage-line.completed,
+.shell-root .lifecycle-stage.done::before,
+.shell-root .lifecycle-step.completed::before {
+  background: var(--pf-gold-dark);
+}
+
+.shell-root :is(.stage-circle.completed, .lifecycle-stage.done .lifecycle-dot, .lifecycle-step.completed .step-circle) {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+}
+
+.shell-root :is(.stage-circle.active, .lifecycle-stage.active .lifecycle-dot, .lifecycle-step.active .step-circle) {
+  border-color: var(--pf-gold);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+/* ---- 20.8 the kitchen ----
+   Readability beats decoration: this board is read across a pass for
+   hours. Large reference numbers, high contrast, one hue per column, and
+   a shadow shallow enough that a screen full of tickets stays readable. */
+
+.shell-root .kitchen-column {
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: none;
+}
+
+.shell-root .kitchen-column-header {
+  background: rgba(0, 0, 0, 0.26);
+  border-bottom: 1px solid var(--pf-line);
+}
+
+.shell-root .column-title h2 {
+  color: var(--pf-text-2);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.shell-root .kitchen-order-card {
+  color: var(--pf-text-2);
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line-neutral);
+  border-radius: 13px;
+  box-shadow: var(--pf-elev-1);
+  transition:
+    transform var(--pf-dur) var(--pf-ease),
+    border-color var(--pf-dur) var(--pf-ease),
+    box-shadow var(--pf-dur) var(--pf-ease);
+}
+
+.shell-root .kitchen-order-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--pf-line-strong);
+  box-shadow: var(--pf-elev-2);
+}
+
+.shell-root .order-ref {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.shell-root .item-name,
+.shell-root .order-item-line,
+.shell-root .item-main strong {
+  color: var(--pf-text-2);
+}
+
+.shell-root .item-qty {
+  color: var(--pf-gold-light);
+}
+
+.shell-root .order-total,
+.shell-root .settle-tile strong,
+.shell-root .history-total strong,
+.shell-root .pay-amount,
+.shell-root .waste-stat-card strong,
+.shell-root .settle-summary-line strong,
+.shell-root .forecast-amount {
+  font-family: var(--font-display);
+  color: var(--pf-text);
+}
+
+.shell-root .settle-tile-collected strong,
+.shell-root .history-total strong.collected,
+.shell-root .settle-cell-collected {
+  color: var(--pf-ok);
+}
+
+.shell-root .settle-cell-outstanding,
+.shell-root .history-total strong.outstanding {
+  color: var(--pf-danger);
+}
+
+.shell-root .served-badge,
+.shell-root .recs-trending-badge,
+.shell-root .featured-flag {
+  border: 1px solid var(--pf-line);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+/* ---- 20.9 tables ----
+   Data tables are read, not looked at, so the header is quiet, the rules
+   are hairline, and every money cell uses tabular figures. */
+
+.shell-root :is(
+    .history-table,
+    .all-orders-table,
+    .orders-table-panel table,
+    .menu-table-panel table,
+    .table-responsive table,
+    .table-container table,
+    .ai-data-table table,
+    .ai-answer-table,
+    .settings-card table
+  ) {
+  color: var(--pf-text-2);
+  background: transparent;
+  border-color: var(--pf-line-neutral);
+}
+
+.shell-root :is(
+    .history-table th,
+    .all-orders-table th,
+    .orders-table-panel th,
+    .menu-table-panel th,
+    .table-responsive thead th,
+    .table-container th,
+    .ai-data-table th,
+    .ai-answer-table thead th,
+    th
+  ) {
+  color: var(--pf-text-3);
+  background: rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid var(--pf-line-strong);
+}
+
+.shell-root :is(
+    .history-table td,
+    .orders-table-panel td,
+    .menu-table-panel td,
+    .table-responsive tbody td,
+    .table-container td,
+    .ai-answer-table td,
+    td
+  ) {
+  color: var(--pf-text-2);
+  border-bottom: 1px solid var(--pf-line-neutral);
+}
+
+.shell-root :is(
+    .history-table tbody tr:hover,
+    .orders-table-panel tbody tr:hover,
+    .menu-table-panel tbody tr:hover,
+    .table-responsive tbody tr:hover
+  ) {
+  background: rgba(212, 169, 92, 0.045);
+}
+
+.shell-root :is(.orders-table-panel, .menu-table-panel, .settle-panel) {
+  overflow: hidden;
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+}
+
+.shell-root .food-name-cell strong,
+.shell-root .table-item strong {
+  color: var(--pf-text);
+}
+
+.shell-root .menu-table-panel tbody tr.row-selected {
+  background: var(--pf-gold-faint);
+}
+
+/* ---- 20.10 charts ----
+   The data stays flat. The depth belongs to the surface the chart is
+   printed on, never to the marks themselves: a tilted bar is a bar no one
+   can read the value of. Warm gold for the series, a warm neutral for the
+   grid, thin rules. */
+
+.shell-root .ai-svg-chart {
+  overflow: visible;
+}
+
+.shell-root .ai-grid-line {
+  stroke: rgba(212, 169, 92, 0.1);
+  stroke-width: 1;
+}
+
+.shell-root .ai-axis-label,
+.shell-root .ai-bar-label {
+  fill: var(--pf-text-3);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.shell-root .ai-bar-value {
+  fill: var(--pf-text-2);
+  font-size: 11.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.shell-root .ai-chart-line {
+  fill: none;
+  stroke: var(--pf-gold);
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.shell-root .ai-chart-area {
+  fill: rgba(212, 169, 92, 0.1);
+  stroke: none;
+}
+
+.shell-root .ai-chart-dot {
+  fill: var(--pf-surface);
+  stroke: var(--pf-gold-light);
+  stroke-width: 2;
+}
+
+.shell-root .ai-chart-bar {
+  fill: var(--pf-gold);
+  opacity: 0.86;
+}
+
+.shell-root .ai-donut-total {
+  fill: var(--pf-text);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.shell-root .ai-donut-caption {
+  fill: var(--pf-text-3);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.shell-root .ai-donut-legend li {
+  color: var(--pf-text-2);
+}
+
+/* One warm ramp for the donut, so a colour cannot mean two different
+   things in two different charts. Lightest first, darkest last. */
+.shell-root .seg-0 {
+  stroke: #f4d28a;
+  background: #f4d28a;
+}
+
+.shell-root .seg-1 {
+  stroke: #d4a95c;
+  background: #d4a95c;
+}
+
+.shell-root .seg-2 {
+  stroke: #8d642f;
+  background: #8d642f;
+}
+
+.shell-root .seg-3 {
+  stroke: #5c421f;
+  background: #5c421f;
+}
+
+.shell-root .bar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.shell-root .tier-bar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.shell-root .waste-bar-item .bar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ---- 20.11 the assistant and its transcript ---- */
+
+.shell-root .ai-assistant-input,
+.shell-root .ai-assistant-answer,
+.shell-root .ai-assistant-refusal,
+.shell-root .ops-answer-empty,
+.shell-root .ops-provenance,
+.shell-root .nlp-sandbox-card,
+.shell-root .recs-empty,
+.shell-root .recs-loading {
+  color: var(--pf-text-2);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--pf-line);
+}
+
+.shell-root .ai-answer-label,
+.shell-root .ops-question-label,
+.shell-root .ops-section h4,
+.shell-root .ops-section-fact,
+.shell-root .ops-section-inference,
+.shell-root .ops-section-recommend,
+.shell-root .ops-provenance-window strong,
+.shell-root .ops-provenance-missing,
+.shell-root .recs-section-title,
+.shell-root .forecast-lbl,
+.shell-root .forecast-date,
+.shell-root .ai-kicker + span,
+.shell-root .ai-chart-card-head p,
+.shell-root .nlp-sandbox-card p {
+  color: var(--pf-text-3);
+}
+
+.shell-root .ai-answer-text,
+.shell-root .ops-question p,
+.shell-root .ops-conclusion,
+.shell-root .ops-section li,
+.shell-root .recs-card-head h4,
+.shell-root .recs-reason,
+.shell-root .rev-comment,
+.shell-root .ai-chart-card-head h3 {
+  color: var(--pf-text-2);
+}
+
+.shell-root .ops-turn,
+.shell-root .ai-module-card,
+.shell-root .complaint-card {
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line);
+  border-radius: 14px;
+}
+
+/* ---- 20.12 guests: sentiment, reviews, loyalty ---- */
+
+.shell-root .live-sentiment-box,
+.shell-root .review-item-card,
+.shell-root .rev-dish-tag,
+.shell-root .review-form-card,
+.shell-root .res-card-form,
+.shell-root .rewards-vouchers-grid,
+.shell-root .voucher-card {
+  color: var(--pf-text-2);
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  box-shadow: var(--pf-elev-1);
+}
+
+.shell-root .live-sentiment-box.positive {
+  border-color: rgba(111, 202, 155, 0.3);
+  background: var(--pf-ok-bg);
+}
+
+.shell-root .live-sentiment-box.negative {
+  border-color: rgba(217, 100, 89, 0.3);
+  background: var(--pf-danger-bg);
+}
+
+.shell-root .live-sentiment-box.neutral {
+  border-color: var(--pf-line);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.shell-root .sentiment-badge-sm.positive {
+  border-color: rgba(111, 202, 155, 0.3);
+  background: var(--pf-ok-bg);
+  color: var(--pf-ok);
+}
+
+.shell-root .sentiment-badge-sm.negative {
+  border-color: rgba(217, 100, 89, 0.3);
+  background: var(--pf-danger-bg);
+  color: var(--pf-danger);
+}
+
+.shell-root .sentiment-badge-sm.neutral {
+  border-color: var(--pf-line);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--pf-text-3);
+}
+
+.shell-root .star-btn {
+  color: var(--pf-text-3);
+  background: transparent;
+  border: 1px solid var(--pf-line);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    color 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease);
+}
+
+.shell-root .star-btn:hover {
+  border-color: var(--pf-line-strong);
+  color: var(--pf-gold);
+}
+
+.shell-root .star-btn.active {
+  border-color: transparent;
+  color: var(--pf-gold);
+}
+
+.shell-root .rev-stars,
+.shell-root .star-rating-text {
+  color: var(--pf-gold);
+}
+
+.shell-root .rev-head strong,
+.shell-root .loyalty-hero-card h1,
+.shell-root .points-display {
+  color: var(--pf-text);
+  font-family: var(--font-display);
+}
+
+.shell-root .points-display {
+  color: var(--pf-gold-light);
+}
+
+.shell-root .kicker,
+.shell-root .tier-header,
+.shell-root .tier-perks,
+.shell-root .rewards-section-title,
+.shell-root .loyalty-notice,
+.shell-root .equiv-text,
+.shell-root .voucher-icon,
+.shell-root .waste-rec-box li,
+.shell-root .waste-breakdown-row span {
+  color: var(--pf-text-3);
+}
+
+.shell-root .tier-bar-fill {
+  background: var(--gold-gradient);
+}
+
+.shell-root .loyalty-notice {
+  border: 1px dashed var(--pf-line);
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px 15px;
+}
+
+/* ---- 20.13 modals ---- */
+
+.shell-root .order-detail-modal,
+.shell-root .modal-content,
+.shell-root .dish-modal {
+  color: var(--pf-text-2);
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-line-strong);
+  border-radius: 22px;
+  box-shadow: var(--pf-elev-4);
+}
+
+.shell-root .modal-header {
+  border-bottom: 1px solid var(--pf-line);
+}
+
+.shell-root .dish-modal-body h2 {
+  font-family: var(--font-display);
+  color: var(--pf-text);
+}
+
+.shell-root .dish-modal-price {
+  font-family: var(--font-display);
+  color: var(--pf-gold-light);
+}
+
+.shell-root .dish-modal-description,
+.shell-root .modal-meta-chip {
+  color: var(--pf-text-2);
+}
+
+.shell-root .no-transitions {
+  color: var(--pf-text-3);
+  border: 1px dashed var(--pf-line);
+  border-radius: 12px;
+}
+
+/* ---- 20.14 the payment ledger ----
+   Existing architecture, existing figures, existing dev simulation. Only
+   the presentation changes here: the same numbers, laid out like the rest
+   of the restaurant. */
+
+.shell-root .settle-provider-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 13px 18px;
+  margin-bottom: 16px;
+  background: var(--pf-surface-2);
+}
+
+.shell-root .settle-provider-name {
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.shell-root .settle-mode-dev {
+  border-color: var(--pf-line);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--pf-text-2);
+}
+
+.shell-root .settle-mode-test {
+  border-color: rgba(224, 164, 88, 0.3);
+  background: var(--pf-warn-bg);
+  color: var(--pf-warn);
+}
+
+.shell-root .settle-mode-live {
+  border-color: rgba(111, 202, 155, 0.3);
+  background: var(--pf-ok-bg);
+  color: var(--pf-ok);
+}
+
+.shell-root .settle-gateway-note {
+  padding: 11px 15px;
+  margin-bottom: 16px;
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.shell-root .pay-panel-ref code,
+.shell-root .pay-attempt-meta code,
+.shell-root .history-provider-ref code,
+.shell-root .qr-url {
+  color: var(--pf-gold-light);
+  background: rgba(212, 169, 92, 0.08);
+  border: 1px solid var(--pf-line);
+  border-radius: 6px;
+  padding: 1px 6px;
+  word-break: break-all;
+}
+
+.shell-root .pay-qr-wrap,
+.shell-root .pay-qr,
+.shell-root .qr-frame {
+  background: #f7f2e8;
+  border: 1px solid var(--pf-line-strong);
+  border-radius: 12px;
+}
+
+.shell-root .pay-panel-warn {
+  color: var(--pf-warn);
+}
+
+.shell-root .settle-summary-line,
+.shell-root .pay-pager {
+  color: var(--pf-text-3);
+}
+
+.shell-root .history-items li,
+.shell-root .history-bill-lines > div {
+  color: var(--pf-text-2);
+  border-bottom: 1px solid var(--pf-line-neutral);
+}
+
+.shell-root .history-total-line {
+  border-top: 1px solid var(--pf-line);
+  padding-top: 11px;
+}
+
+.shell-root .history-total-line strong {
+  font-family: var(--font-display);
+  font-size: 21px;
+  color: var(--pf-gold-light);
+}
+
+.shell-root .history-ref {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--pf-text);
+}
+
+.shell-root .history-date {
+  color: var(--pf-text-3);
+}
+
+/* ---- 20.15 the entry page and the table QR ----
+   Reached by scanning a printed code, so it is a full page rather than a
+   panel inside the shell. It still has to look like the same restaurant. */
+
+.entry-card,
+.entry-table-header,
+.entry-welcome,
+.entry-foot,
+.table-context-bar {
+  color: var(--pf-text-2);
+}
+
+.entry-card {
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line);
+  border-radius: 20px;
+  box-shadow: var(--pf-elev-3);
+}
+
+.entry-brand-mark {
+  background: var(--pf-gold-faint);
+  border: 1px solid var(--pf-line);
+  color: var(--pf-gold);
+}
+
+.entry-table-badge {
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line);
+  color: var(--pf-text);
+}
+
+.entry-table-badge strong {
+  color: var(--pf-gold-light);
+}
+
+.entry-table-badge small,
+.entry-table-label,
+.entry-hint,
+.entry-welcome,
+.entry-foot {
+  color: var(--pf-text-3);
+}
+
+.entry-secondary-btn {
+  color: var(--pf-text);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.entry-secondary-btn:hover:not(:disabled) {
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-text);
+}
+
+.entry-alert.error {
+  border-color: rgba(217, 100, 89, 0.3);
+  background: var(--pf-danger-bg);
+  color: #f2a79f;
+}
+
+.entry-alert.warn {
+  border-color: rgba(224, 164, 88, 0.3);
+  background: var(--pf-warn-bg);
+  color: var(--pf-warn);
+}
+
+/* ---- 20.16 the image picker and the menu editor ---- */
+
+.shell-root .image-preview-box,
+.shell-root .image-library-thumb {
+  background: rgba(0, 0, 0, 0.26);
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+}
+
+.shell-root .image-preview-empty,
+.shell-root .image-url-label,
+.shell-root .image-library-title,
+.shell-root .image-error-text,
+.shell-root .menu-image-picker > label:first-child,
+.shell-root .menu-sort-toggles label {
+  color: var(--pf-text-3);
+}
+
+.shell-root .image-library-thumb.active {
+  border-color: var(--pf-gold);
+  box-shadow: 0 0 0 3px rgba(212, 169, 92, 0.14);
+}
+
+.shell-root .bulk-button,
+.shell-root .selection-action-bar {
+  color: var(--pf-text);
+}
+
+.shell-root .bulk-button.danger {
+  border-color: rgba(217, 100, 89, 0.28);
+  background: var(--pf-danger-bg);
+  color: var(--pf-danger);
+}
+
+.shell-root .featured-strip-title,
+.shell-root .settings-card h3,
+.shell-root .form-card h3 {
+  color: var(--pf-text);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+/* A message the page never had a rule for. */
+.shell-root .success-message {
+  padding: 13px 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(111, 202, 155, 0.3);
+  border-radius: 13px;
+  background: var(--pf-ok-bg);
+  color: #a6dfc3;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ---- 20.17 the sidebar's own icons ----
+   App.css styled `.nav-icon` as a light chip for the old sidebar. The
+   shell draws its own, so the old box and margin are withdrawn here
+   rather than left to fight the new rule. */
+
+.shell-root .shell-nav-item .nav-icon,
+.shell-root .shell-signout .nav-icon {
+  display: grid;
+  place-items: center;
+  margin-right: 0;
+  background: none;
+  border-radius: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+/* ---- 20.19 the last light-theme stragglers ----
+   Rules from App.css that no earlier section covered. Grouped by what they
+   are rather than where they came from, so there is one place to look when
+   something on a page is still drawing in near-black. */
+
+/* A list of read-only figures: the service snapshot, the operations list,
+   the AI stat rows. App.css gave each of these a light row. */
+.shell-root :is(.op-item, .status-item, .dish-item, .ai-stat-row, .ai-stat-item) {
+  color: var(--pf-text-2);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--pf-line-neutral);
+  border-radius: 12px;
+  box-shadow: var(--pf-rim);
+}
+
+.shell-root :is(.op-item, .status-item, .dish-item) {
+  padding: 12px 14px;
+}
+
+.shell-root :is(.op-title, .status-label, .dish-item small) {
+  color: var(--pf-text-3);
+}
+
+.shell-root :is(.op-value, .status-item strong, .dish-item strong) {
+  color: var(--pf-text);
+}
+
+.shell-root .op-value.good,
+.shell-root .status-item strong.ok {
+  color: var(--pf-ok);
+}
+
+.shell-root :is(.item-qty, .rec-rank-badge, .recs-card-category, .item-count) {
+  color: var(--pf-gold-light);
+  background: var(--pf-gold-faint);
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+}
+
+/* A ranking score sits on top of the dish photograph, so it has to carry
+   its own ground rather than borrow the card's. */
+.shell-root .recs-score {
+  padding: 4px 11px;
+  border: 1px solid var(--pf-line-strong);
+  border-radius: 999px;
+  background: rgba(9, 8, 6, 0.82);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pf-gold-light);
+  white-space: nowrap;
+}
+
+.shell-root .recs-explainer,
+.shell-root .recs-reason-personal,
+.shell-root .recs-reason-trending {
+  color: var(--pf-text-2);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--pf-line-neutral);
+  border-radius: 12px;
+}
+
+/* The small inline messages a page raises: a table already claimed, an
+   order in progress, a state the guest cannot change. */
+.shell-root :is(
+    .claimed-table-display,
+    .order-count,
+    .status-message,
+    .order-status,
+    .bill-note,
+    .loyalty-redemption-box,
+    .chip.warning,
+    .no-transitions
+  ) {
+  color: var(--pf-text-2);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--pf-line);
+  border-radius: 13px;
+}
+
+.shell-root :is(.claimed-table-display strong, .claimed-table-display span) {
+  color: var(--pf-gold-light);
+}
+
+.shell-root :is(.claimed-table-display small, .bill-note) {
+  color: var(--pf-text-3);
+}
+
+.shell-root .chip.warning,
+.shell-root .order-status,
+.shell-root .loyalty-redemption-box {
+  border-color: rgba(224, 164, 88, 0.3);
+  background: var(--pf-warn-bg);
+  color: var(--pf-warn);
+}
+
+/* A link the guest can follow to pay: gold and underlined, so it never
+   reads as another chip. */
+.shell-root .pay-upi-link,
+.shell-root .ops-provenance-details summary,
+.shell-root .ops-transcript-intro {
+  color: var(--pf-gold-light);
+}
+
+.shell-root .edit-button {
+  color: var(--pf-text);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease);
+}
+
+.shell-root .edit-button:hover {
+  transform: translateY(-1px);
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+.shell-root .forecast-amount,
+.shell-root .points-display,
+.shell-root .featured-flag {
+  color: var(--pf-gold-light);
+}
+
+.shell-root .featured-flag {
+  background: var(--pf-gold-faint);
+  border: 1px solid var(--pf-line);
+}
+
+.shell-root .apply-price-btn {
+  color: var(--pf-ink);
+  background: var(--gold-gradient);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shell-root :is(.ai-tab, .ai-tab.active) {
+  color: var(--pf-text-2);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.shell-root .ai-tab.active {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+}
+
+.shell-root :is(.ai-assistant-card, .ai-assistant-answer) {
+  color: var(--pf-text-2);
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line);
+  border-radius: 18px;
+  box-shadow: var(--pf-elev-1);
+}
+
+.shell-root .ai-assistant-head p {
+  color: var(--pf-text-3);
+}
+
+.shell-root .ai-assistant-answer {
+  color: var(--pf-text-2);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.shell-root :is(.step-item, .step-line) {
+  color: var(--pf-text-3);
+}
+
+.shell-root .step-item.active .step-circle,
+.shell-root .step-line.active {
+  color: var(--pf-gold-light);
+  border-color: var(--pf-gold);
+  background: var(--pf-gold-faint);
+}
+
+/* The kitchen columns: one hue per stage, drawn as a hairline on the column
+   rather than as a coloured card behind every ticket. */
+.shell-root .kitchen-column.preparing {
+  border-color: rgba(224, 164, 88, 0.24);
+}
+
+.shell-root .kitchen-column.ready {
+  border-color: rgba(127, 168, 232, 0.22);
+}
+
+.shell-root .kitchen-column.served {
+  border-color: rgba(111, 202, 155, 0.22);
+}
+
+.shell-root .empty-note,
+.shell-root .empty-column {
+  color: var(--pf-text-3);
+  background: transparent;
+  border: 1px dashed var(--pf-line);
+  box-shadow: none;
+}
+
+/* The focus ring. App.css draws an indigo one; gold is the product's
+   signal colour, and a focus ring is a signal. */
+.shell-root input:focus,
+.shell-root select:focus,
+.shell-root textarea:focus,
+.input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--pf-gold);
+  box-shadow: 0 0 0 3px rgba(212, 169, 92, 0.12);
+}
+
+.auth-kicker,
+.auth-page .eyebrow {
+  color: var(--pf-gold);
+}
+
+.shell-root .success-banner,
+.success-banner {
+  padding: 13px 16px;
+  margin-top: 14px;
+  border: 1px solid var(--pf-line);
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--pf-text-2);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+/* ---- 20.21 the page grounds ----
+   The single most consequential rule in this section.
+
+   App.css paints each page's own root element near-white. Every colour in
+   the portal is a translucent warm tint over that ground, so a white page
+   behind a dark card turned the whole screen milky: the KPI cards came out
+   cream, the range chips came out light grey, and the pale type on them
+   disappeared. No amount of repainting the components fixes a white floor;
+   the floor has to go.
+
+   Each page root is given no background at all, so the shell's warm room
+   shows through and every translucent tint lands on the colour it was
+   chosen against. */
+
+.shell-root :is(
+    .kitchen-page,
+    .ai-board-page,
+    .ai-decision-support-page,
+    .orders-page,
+    .menu-page,
+    .payments-page,
+    .settle-page,
+    .reviews-page,
+    .inventory-page,
+    .customers-page,
+    .staff-page,
+    .suppliers-page,
+    .tables-page,
+    .waste-page,
+    .revenue-page,
+    .reservations-page,
+    .settings-page,
+    .dashboard-page,
+    .operations-page
+  ) {
+  background: transparent;
+  color: var(--pf-text-2);
+}
+
+/* The page's own gutter is the shell's gutter now. */
+.shell-root :is(
+    .kitchen-page,
+    .ai-board-page,
+    .orders-page,
+    .menu-page,
+    .payments-page,
+    .reviews-page,
+    .inventory-page,
+    .customers-page,
+    .staff-page,
+    .suppliers-page,
+    .waste-page,
+    .revenue-page,
+    .reservations-page
+  ) {
+  padding: 0;
+  max-width: none;
+}
+
+/* `thead` is a bare-element rule in App.css, so the header row of every
+   table on the site was a white band regardless of what the table itself
+   looked like. */
+.shell-root thead {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* `table` and `tr` are bare-element rules too, and App.css paints both
+   white. Several pages - the waste log, the closing sheet - put a table
+   with no class of its own inside a panel, so nothing else reaches it.
+   Scoped to the shell, so the public site's own markup is untouched. */
+.shell-root table {
+  background: transparent;
+  border-color: var(--pf-line-neutral);
+  color: var(--pf-text-2);
+}
+
+.shell-root tbody tr,
+.shell-root thead tr {
+  background: transparent;
+}
+
+/* The KPI card's coloured top rule. App.css gives each card in the row a
+   different hue through `:nth-child`, which is a rainbow on every screen
+   that shows a stat grid. The lit edge is the same on all of them. */
+.shell-root .stat-card::before,
+.shell-root .stat-card:nth-child(1)::before,
+.shell-root .stat-card:nth-child(2)::before,
+.shell-root .stat-card:nth-child(3)::before,
+.shell-root .stat-card:nth-child(4)::before,
+.shell-root .stat-card:nth-child(5)::before,
+.shell-root .stat-card:nth-child(6)::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 243, 220, 0.1),
+    transparent
+  );
+}
+
+/* A switch between two views of the same data is a control, not a card. */
+.shell-root :is(.pay-view-switch, .pill-switch, .status-filter-tabs) {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid var(--pf-line-neutral);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+/* The range chips over a chart. Active is gold, the rest are quiet. */
+.shell-root .ai-range-chip.active,
+.shell-root .ai-module-nav button.active {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+  box-shadow: var(--pf-shadow-gold);
+}
+
+.shell-root .ai-range-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0 16px;
+}
+
+/* The assistant's own answer block, which App.css gives a white card and
+   an indigo left rule. */
+.shell-root .ai-assistant-answer {
+  border-left: 3px solid var(--pf-gold);
+}
+
+/* A read-only figure inside the assistant. */
+.shell-root .ai-stat-card,
+.shell-root .ai-stat-grid .stat-card {
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-elev-1);
+}
+
+/* App.css groups `.page-header button` with the primary and secondary
+   buttons, which is a higher specificity than either of them on their own
+   and left the page's own controls on a different shape from the rest of
+   the product. */
+.shell-root .page-header button {
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-glass);
+  color: var(--pf-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease);
+}
+
+.shell-root .page-header button:hover {
+  transform: translateY(-2px);
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+/* The assistant's heading. App.css prints it in indigo; a heading is a
+   heading, in the display face, the same as every other one. */
+.shell-root .ai-assistant-head h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+/* The worked examples under the assistant. A useful line, but a quiet
+   one: it is help text, not a call to action. */
+.shell-root .ai-assistant-card p {
+  color: var(--pf-text-3);
+}
+
+/* Emoji as interface. A clipboard, a tick and a bell are a chat client's
+   idea of a kitchen column, not a restaurant's. The stage is named in
+   words already, so the glyph is withdrawn and a small gold rule takes
+   its place. */
+.shell-root .column-icon,
+.shell-root .empty-icon {
+  display: none;
+}
+
+.shell-root .column-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.shell-root .column-title::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--pf-gold);
+}
+
+.shell-root .column-title h2 {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.shell-root .all-orders-table summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--pf-text-2);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.shell-root .all-orders-table summary::-webkit-details-marker {
+  display: none;
+}
+
+.shell-root .all-orders-table summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--pf-gold);
+  transition: transform var(--pf-dur) var(--pf-ease);
+}
+
+.shell-root .all-orders-table[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.shell-root .all-orders-table summary:hover {
+  color: var(--pf-gold-light);
+}
+
+/* ---- 20.22 the last dark-on-dark headings ----
+   A handful of headings still carry App.css's slate or indigo on a card
+   that is now warm black. On a light page those were merely dark; on this
+   one they read as blue text. They are headings, so they get the display
+   face in the product's own text colour. */
+
+.shell-root :is(
+    .active-order-info h3,
+    .all-orders-table summary h3,
+    .recs-empty h3,
+    .empty-state h3,
+    .waste-rec-box h3,
+    .detail-section h3,
+    .order-history h3,
+    .order-track-card h3,
+    .active-order-tracker h3,
+    .res-pass-card h3,
+    .loyalty-hero-card h3,
+    .bill-tab-view h2,
+    .tracking-tab-view h2,
+    .cart-tab-view h2,
+    .menu-tab-view h2,
+    .reservations-tab-view h2,
+    .reviews-tab-view h2
+  ) {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+/* The order reference is the one number a guest looks for. It reads as a
+   reference, not as a link. */
+.shell-root .active-order-info h3 {
+  font-size: 20px;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A reference is a reference, not a headline figure. Display numerals at
+   card size would break it across two lines, so it is set a step smaller
+   and on tabular figures so the digits line up. */
+.shell-root .stat-card strong.order-reference {
+  font-size: clamp(19px, 2vw, 24px);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+}
+
+.shell-root .order-meta,
+.shell-root .active-order-meta {
+  color: var(--pf-text-3);
+}
+
+/* A tag is as wide as its text. Inside a column of block children it would
+   otherwise stretch to the width of the card. */
+.shell-root .order-tag,
+.shell-root .table-badge,
+.shell-root .panel-tag {
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* A list of dishes inside one order cell. App.css set this in slate, which
+   on the warm dark table read as blue text. */
+.shell-root .table-item,
+.shell-root .food-name-cell,
+.shell-root .item-name {
+  color: var(--pf-text-2);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.shell-root .table-item .notes {
+  color: var(--pf-warn);
+  font-style: italic;
+}
+
+/* ---- 20.23 the late button names ----
+   Five button classes were introduced after the design system and never
+   given a rule, so they rendered as the browser's own grey rectangles.
+   They are named here once, in the family's own terms, rather than as five
+   near-duplicate rules. */
+
+.shell-root :is(
+    .add-button,
+    .save-button,
+    .submit-btn,
+    .cancel-button
+  ) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-glass);
+  color: var(--pf-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease);
+}
+
+.shell-root :is(.add-button, .save-button, .submit-btn):hover {
+  transform: translateY(-2px);
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+}
+
+.shell-root .cancel-button {
+  border-color: var(--pf-line-neutral);
+  color: var(--pf-text-3);
+}
+
+.shell-root .cancel-button:hover {
+  border-color: var(--pf-line-strong);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--pf-text);
+}
+
+.shell-root .danger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid rgba(217, 100, 89, 0.28);
+  border-radius: 999px;
+  background: var(--pf-danger-bg);
+  color: var(--pf-danger);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease);
+}
+
+.shell-root .danger-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(217, 100, 89, 0.5);
+  background: rgba(217, 100, 89, 0.18);
+}
+
+/* ---- 20.24 the late labels ----
+   Small type that App.css never reached. Nothing structural, just enough
+   for these to read as part of the product rather than as leftovers. */
+
+.shell-root :is(
+    .meta-chip,
+    .rank-tag,
+    .outlook-tag,
+    .trend-badge,
+    .code-pill,
+    .rec-score-pill,
+    .ai-chip-tag,
+    .projected-qty,
+    .rating,
+    .sentiment-stat,
+    .stat-subtext,
+    .subtle-text,
+    .warning-text,
+    .rec-reason-text,
+    .rec-category,
+    .rec-price-val,
+    .suggested-price-val,
+    .price,
+    .count,
+    .divider,
+    .complaint-stars
+  ) {
+  color: var(--pf-text-3);
+  font-size: 12px;
+}
+
+.shell-root :is(.meta-chip, .rank-tag, .outlook-tag, .code-pill, .rec-score-pill, .ai-chip-tag) {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold-light);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+/* The four count cards at the top of the menu manager. A figure, so it is
+   set in the display face; App.css left it in slate. */
+.shell-root .menu-summary-card {
+  color: var(--pf-text-3);
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  box-shadow: var(--pf-elev-1);
+}
+
+.shell-root .menu-summary-card strong {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--pf-text);
+}
+
+.shell-root .menu-summary-card.accent {
+  background: var(--pf-gold-faint);
+  border-color: var(--pf-line-strong);
+}
+
+.shell-root .menu-summary-card.accent strong {
+  color: var(--pf-gold-light);
+}
+
+.shell-root .dish-meta-line {
+  color: var(--pf-text-3);
+}
+
+.shell-root :is(.complaint-stars, .rating) {
+  color: var(--pf-gold);
+  letter-spacing: 0.08em;
+}
+
+.shell-root :is(.warning-text, .status-danger) {
+  color: var(--pf-warn);
+}
+
+.shell-root .auth-success {
+  padding: 12px 15px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(111, 202, 155, 0.3);
+  border-radius: 13px;
+  background: var(--pf-ok-bg);
+  color: #a6dfc3;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.shell-root :is(.field-group, .form-row, .filter-select, .search-input) {
+  color: var(--pf-text-2);
+}
+
+.shell-root .filter-select,
+.shell-root .search-input {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.26);
+  color: var(--pf-text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.shell-root .star-picker {
+  display: flex;
+  gap: 6px;
+}
+
+.shell-root .star-picker button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--pf-line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pf-text-3);
+  font-size: 18px;
+  cursor: pointer;
+  transition:
+    color 200ms var(--pf-ease),
+    border-color 200ms var(--pf-ease),
+    background-color 200ms var(--pf-ease);
+}
+
+.shell-root .star-picker button:hover,
+.shell-root .star-picker button.active {
+  border-color: var(--pf-line-strong);
+  background: var(--pf-gold-faint);
+  color: var(--pf-gold);
+}
+
+.shell-root .settings-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---- 20.20 the payment provider, if one is ever set up ----
+   A place to put the card, so the Settings page does not have to invent
+   one later. Presentation only: nothing here reads or writes a provider. */
+
+.provider-card {
+  position: relative;
+
+  padding: clamp(18px, 2.4vw, 26px);
+  border: 1px solid var(--pf-line);
+  border-radius: 18px;
+  background: var(--pf-surface-2);
+  box-shadow: var(--pf-elev-2);
+  overflow: hidden;
+}
+
+.provider-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 169, 92, 0.4),
+    transparent
+  );
+}
+
+.provider-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.provider-eyebrow {
+  margin: 0 0 9px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--pf-text-3);
+}
+
+.provider-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(21px, 2.4vw, 27px);
+  font-weight: 600;
+  color: var(--pf-text);
+}
+
+.provider-copy {
+  margin: 10px 0 0;
+  max-width: 58ch;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--pf-text-2);
+}
+
+.provider-optional {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: var(--pf-gold-faint);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pf-gold-light);
+  white-space: nowrap;
+}
+
+.provider-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  margin-top: 16px;
+  border: 1px solid var(--pf-line);
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 13px;
+  color: var(--pf-text-2);
+}
+
+.provider-status strong {
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.provider-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--pf-text-3);
+}
+
+.provider-note {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--pf-text-3);
+}
+
+.provider-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--pf-line-neutral);
+}
+
+/* The settings tabs: Restaurant, Payments. Two rooms rather than one long
+   form with an optional section at the bottom. */
+.settings-tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 5px;
+  margin-bottom: clamp(18px, 2.4vw, 26px);
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.settings-tabs button {
+  min-height: 40px;
+  padding: 9px 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pf-text-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 200ms var(--pf-ease),
+    color 200ms var(--pf-ease),
+    transform 200ms var(--pf-ease);
+}
+
+.settings-tabs button:hover {
+  color: var(--pf-text);
+}
+
+.settings-tabs button.active {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--pf-ink);
+}

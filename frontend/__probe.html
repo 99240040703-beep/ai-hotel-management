@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>probe</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #090806;
+        overflow: hidden;
+      }
+      iframe {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe id="app" src="/"></iframe>
+    <script>
+      // Same-origin probe: sets the stored session, loads the app in a
+      // viewport-sized frame, then clicks the sidebar item named by ?nav=
+      // and, if asked, the tab named by ?tab=.
+      const params = new URLSearchParams(location.search);
+      const frame = document.getElementById("app");
+
+      function clickByText(scope, text, selector) {
+        const nodes = Array.from(
+          scope.querySelectorAll(selector || "button"),
+        );
+
+        const match = nodes.find((node) =>
+          (node.textContent || "").trim().toLowerCase().startsWith(
+            text.trim().toLowerCase(),
+          ),
+        );
+
+        if (match) {
+          match.click();
+          return true;
+        }
+
+        return false;
+      }
+
+      frame.addEventListener("load", () => {
+        const doc = frame.contentDocument;
+        const nav = params.get("nav");
+        const tab = params.get("tab");
+
+        setTimeout(() => {
+          if (nav) clickByText(doc, nav, ".shell-nav-item");
+          if (tab) {
+            setTimeout(() => clickByText(doc, tab, ".settings-tabs button"), 700);
+          }
+        }, 2600);
+      });
+    </script>
+  </body>
+</html>

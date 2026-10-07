@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>contrast audit</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #090806;
+        color: #f5f1e8;
+        font: 11px/1.45 Consolas, monospace;
+      }
+      iframe {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        border: 0;
+      }
+      #report {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 10;
+        max-height: 62vh;
+        overflow: auto;
+        padding: 8px 10px;
+        background: #000;
+        border-top: 2px solid #d4a95c;
+        white-space: pre-wrap;
+      }
+      .bad {
+        color: #f2a79f;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe id="app" src="/"></iframe>
+    <div id="report">measuring…</div>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const frame = document.getElementById("app");
+      const report = document.getElementById("report");
+
+      if (params.get("w")) frame.style.width = `${params.get("w")}px`;
+
+      function describe(node) {
+        const id = node.id ? `#${node.id}` : "";
+        const classes =
+          node.className && typeof node.className === "string"
+            ? "." + node.className.trim().split(/\s+/).slice(0, 3).join(".")
+            : "";
+
+        return node.tagName.toLowerCase() + id + classes;
+      }
+
+      /* The effective background of a node, walking up until something
+         opaque is found. A node over a transparent surface is measured
+         against whatever is behind it, which is the whole point. */
+      function backdrop(node, view) {
+        let current = node;
+
+        while (current && current !== view.documentElement) {
+          const style = view.getComputedStyle(current);
+          const alpha = parseFloat(style.backgroundColor.split(",")[3] ?? "1");
+
+          if (!Number.isNaN(alpha) && alpha > 0.6) {
+            return style.backgroundColor;
+          }
+
+          current = current.parentElement;
+        }
+
+        return "rgb(9, 8, 6)";
+      }
+
+      function luminance(rgb) {
+        const parts = rgb.match(/[\d.]+/g).map(Number);
+        const [r, g, b] = parts;
+
+        const channel = (value) => {
+          const c = value / 255;
+
+          return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        };
+
+        return (
+          0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+        );
+      }
+
+      function contrast(fg, bg) {
+        const a = luminance(fg);
+        const b = luminance(bg);
+
+        return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      }
+
+      function run(view) {
+        const doc = view.document;
+        const lines = [];
+        const findings = [];
+
+        doc.querySelectorAll("*").forEach((node) => {
+          /* Only elements that actually print text of their own. */
+          const own = Array.from(node.childNodes)
+            .filter((child) => child.nodeType === 3)
+            .map((child) => child.textContent.trim())
+            .join("")
+            .trim();
+
+          if (!own) return;
+
+          const box = node.getBoundingClientRect();
+
+          if (box.width < 4 || box.height < 4) return;
+
+          const style = view.getComputedStyle(node);
+
+          if (style.visibility === "hidden" || style.opacity === "0") return;
+
+          const bg = backdrop(node, view);
+          const ratio = contrast(style.color, bg);
+          const size = parseFloat(style.fontSize);
+          const bold = parseInt(style.fontWeight, 10) >= 700;
+
+          /* WCAG AA: 3:1 for large text, 4.5:1 otherwise. */
+          const floor = size >= 24 || (size >= 18.66 && bold) ? 3 : 4.5;
+
+          if (ratio < floor) {
+            findings.push({
+              what: describe(node),
+              sample: own.slice(0, 34),
+              ratio: ratio.toFixed(2),
+              floor,
+              color: style.color,
+              bg,
+            });
+          }
+        });
+
+        lines.push(
+          `viewport ${view.innerWidth}  text elements below AA: ${findings.length}`,
+        );
+        lines.push("");
+
+        findings
+          .sort((a, b) => a.ratio - b.ratio)
+          .slice(0, 40)
+          .forEach((entry) => {
+            lines.push(
+              `  ${entry.ratio.padStart(5)} (<${entry.floor})  ${
+                entry.what
+              }  "${entry.sample}"`,
+            );
+            lines.push(`          ${entry.color} on ${entry.bg}`);
+          });
+
+        return lines.join("\n");
+      }
+
+      frame.addEventListener("load", () => {
+        const nav = params.get("nav");
+        const view = frame.contentWindow;
+        const doc = frame.contentDocument;
+
+        setTimeout(() => {
+          if (nav) {
+            const item = Array.from(
+              doc.querySelectorAll(".shell-nav-item"),
+            ).find((node) =>
+              (node.textContent || "").trim().toLowerCase().startsWith(
+                nav.trim().toLowerCase(),
+              ),
+            );
+
+            if (item) item.click();
+          }
+
+          setTimeout(() => {
+            report.textContent = run(view);
+          }, 1400);
+        }, 2600);
+      });
+    </script>
+  </body>
+</html>
