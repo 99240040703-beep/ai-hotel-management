@@ -1,0 +1,23 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+sqlalchemy==2.0.36
+pymysql==1.1.1
+cryptography==44.0.0
+pydantic==2.10.4
+email-validator==2.2.0
+python-dotenv==1.0.1
+python-multipart==0.0.20
+passlib[bcrypt]==1.7.4
+# passlib 1.7.4 calls bcrypt with a >72 byte probe and breaks on 4.1+
+bcrypt==4.0.1
+python-jose[cryptography]==3.3.0
+scikit-learn==1.6.0
+pandas==2.2.3
+numpy==2.2.1
+joblib==1.4.2
+
+# Phase 7F: the official Razorpay SDK. Used for the documented order API
+# and for webhook signature verification. Only imported when a real
+# provider is selected, so a development deployment does not need it
+# installed.
+razorpay==2.0.1

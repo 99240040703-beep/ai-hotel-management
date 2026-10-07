@@ -1,0 +1,11 @@
+{
+  "mysql_engine_and_no_fallback": "FAILED: No module named 'database'",
+  "backend_initialization": "FAILED: No module named 'main'",
+  "get_root": "FAILED: name 'client' is not defined",
+  "get_menu": "FAILED: name 'client' is not defined",
+  "verify_existing_users": "FAILED: No module named 'database'",
+  "self_registration_customer_role": "FAILED: name 'client' is not defined",
+  "put_menu_available_field": "FAILED: name 'SessionLocal' is not defined",
+  "mysql_row_counts": "FAILED: (1045, \"Access denied for user 'root'@'localhost' (using password: NO)\")",
+  "sqlite_files_untouched": "FAILED: File C:\\Users\\BUDDY\\OneDrive\\Desktop\\AI RESTUARENT MANAGEMENT\\backend\\backend\\restaurant.db does not exist!"
+}
