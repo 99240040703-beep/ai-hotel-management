@@ -1182,8 +1182,6 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   The amount shown is the header's own total. The actions
   are: ask for a payment, or check whether one has been
   confirmed. There is no control that sets paid. */}
-  {!isLegacyHeader(selectedHeader) && (
-  <>
   <div className="detail-section admin-pay-section">
   <h3>Bill & Payment</h3>
 
@@ -1379,8 +1377,6 @@ const isLegacyHeader = (header) => header.is_legacy === true || header.id < 0;
   <p className="pay-panel-note">
   {payBusy ? "Reading payment records…" : ""}
   </p>
-  )}
-  </>
   )}
   </div>
   </div>
